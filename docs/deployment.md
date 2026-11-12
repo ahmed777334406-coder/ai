@@ -68,3 +68,17 @@ The seed script creates synthetic users, listings, campus-zone labels and genera
 ## 5. Current blocker
 
 The connected GitHub account currently exposes two empty repositories named `ai` and `ai-coash`, but no repository named `Beihang-SmartFind`. The available GitHub actions can push files/commits to an existing repository but do not expose repository creation. No source has been pushed to either unrelated empty repository. Create a dedicated repository named `Beihang-SmartFind` (or explicitly authorize use of one of the empty repositories) before linking it to Vercel.
+
+## Actual deployment (12 November 2026)
+
+The existing Vercel project `beihang-smartfind` uses root directory `frontend`, Node 22, `npm ci`, and `npm run build`. Its production domain remains https://beihang-smartfind.vercel.app.
+
+SmartFind's independent Railway project contains `Postgres` (PostgreSQL 17/pgvector, persistent database volume) and `smartfind-api` (Dockerfile `backend/Dockerfile`, persistent `/data` upload volume). API: https://smartfind-api-production.up.railway.app. Startup runs Alembic migrations, idempotent campus setup and Uvicorn on `$PORT`. Database URLs are normalized to `postgresql+psycopg`.
+
+Configured backend variables: `ENVIRONMENT`, `DATABASE_URL` (Railway service reference), `JWT_SECRET_KEY` (private generated value), `UPLOAD_DIR=/data/uploads`, `FRONTEND_URL`, `CORS_ORIGINS`, `PORT=8000`, `GEMINI_MODEL=gemini-2.5-flash`, `ENABLE_LOCAL_MODELS=false`, `ADMIN_EMAIL` and private `ADMIN_PASSWORD`.
+
+Configured Vercel variables: `NEXT_PUBLIC_API_URL=https://smartfind-api-production.up.railway.app/api/v1` and `NEXT_PUBLIC_API_ORIGIN=https://smartfind-api-production.up.railway.app`.
+
+Only `GEMINI_API_KEY` is still required for live Gemini calls. Set it in SmartFind Railway Variables, never in a `NEXT_PUBLIC_*` variable. Choose another `GEMINI_MODEL` only if needed for your key's available models. Enabling local pretrained inference additionally requires optional packages/weights, `INSTALL_AI_DEPS=true` at build, `ENABLE_LOCAL_MODELS=true` and adequate memory/cache storage. Rebuild and re-embed existing listings when representation methods change; do not compare embeddings from different methods.
+
+The deployed backend is pinned to the verified commit. To deploy later source changes, reconnect the same SmartFind service to the intended reviewed commit. Do not create or modify any Football Coach service.

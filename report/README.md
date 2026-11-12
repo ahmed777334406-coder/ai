@@ -1,8 +1,5 @@
-# Academic report status
+# Academic report
 
-- `SmartFind_Report.md`: complete draft, 4,500+ words, based on the provided Beihang course template structure.
-- `SmartFind_Report.docx`: generated using the supplied original DOCX as the page-layout/style base; a copy is included under `docs/course_template/`, and the original Library file was not modified.
-- `SmartFind_Report.pdf`: generated with ReportLab Platypus and the required Unicode CID font for Chinese text.
-- The report clearly marks unverified features and does not invent screenshots, live Gemini calls, pretrained-model measurements or PostgreSQL deployment evidence.
+The Markdown report exceeds 3,000 words and is rendered as DOCX and PDF using the provided course template layout. Current report files use blank author fields for safe public sharing; fill those fields locally for submission. The implementation status distinguishes deployed verification from untested live Gemini and pretrained model inference. See `docs/verification/current-session.md` for executed results and `docs/demonstration.md` for the professor walkthrough.
 
-Before submitting, complete the outstanding verification listed in the report, capture genuine frontend screenshots, update the measured results and regenerate all three report formats with `python scripts/build_report.py`.
+Regenerate with `python scripts/build_report.py` after installing `python-docx` and `reportlab`.

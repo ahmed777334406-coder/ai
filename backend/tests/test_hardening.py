@@ -55,3 +55,37 @@ def test_public_listings_do_not_disclose_student_names(client):
     created = client.post('/api/v1/listings', headers={"Authorization":f"Bearer {token}"}, json={"status":"LOST", "title":"Black backpack", "description":"Black backpack lost near the library", "category":"Bags"})
     assert created.status_code == 201
     assert 'Test Student' not in client.get('/api/v1/listings').text
+
+
+def test_rejected_claim_reopens_item_and_notifies_student(client):
+    from app.models import User, UserRole
+    from app.database import get_db
+    from app.security import hash_password, create_access_token
+    owner = register(client, 'claim-owner@example.edu')
+    finder = register(client, 'claim-finder@example.edu')
+    found = client.post('/api/v1/listings', headers={'Authorization':f'Bearer {finder}'}, json={'status':'FOUND','title':'Fictional wallet','description':'Blue wallet found in the cafeteria','category':'Wallets'}).json()
+    claim = client.post('/api/v1/claims', headers={'Authorization':f'Bearer {owner}'}, json={'listing_id':found['id'],'verification_details':'Fictional identifying details for verification.'}).json()
+    with next(client.app.dependency_overrides[get_db]()) as db:
+        admin=User(email='private-reviewer@example.edu',full_name='Test Reviewer',password_hash=hash_password('PrivateTestPassword!'),role=UserRole.ADMIN)
+        db.add(admin);db.commit();db.refresh(admin)
+        token=create_access_token(admin.id,admin.role.value)
+    response=client.patch(f"/api/v1/admin/claims/{claim['id']}", headers={'Authorization':f'Bearer {token}'},json={'status':'REJECTED','admin_note':'Identifying details do not match.'})
+    assert response.status_code == 200
+    assert client.get(f"/api/v1/listings/{found['id']}").json()['state']=='OPEN'
+    notifications=client.get('/api/v1/notifications',headers={'Authorization':f'Bearer {owner}'}).json()
+    assert any(n['kind']=='CLAIM_REJECTED' for n in notifications)
+    assert client.patch(f"/api/v1/admin/claims/{claim['id']}",headers={'Authorization':f'Bearer {token}'},json={'status':'APPROVED'}).status_code==409
+
+
+def test_listing_patch_rejects_invalid_required_fields(client):
+    token=register(client)
+    headers={'Authorization':f'Bearer {token}'}
+    item=client.post('/api/v1/listings',headers=headers,json={'status':'LOST','title':'Fictional key ring','description':'A silver key ring lost near the library','category':'Keys'}).json()
+    for change in ({'title':None},{'description':''},{'category':'  '},{'title':'x'*181}):
+        assert client.patch(f"/api/v1/listings/{item['id']}",headers=headers,json=change).status_code==422
+
+
+def test_login_rate_limit_is_enforced(client):
+    for _ in range(12):
+        assert client.post('/api/v1/auth/login',json={'email':'missing@example.edu','password':'incorrect'}).status_code==401
+    assert client.post('/api/v1/auth/login',json={'email':'missing@example.edu','password':'incorrect'}).status_code==429

@@ -39,3 +39,9 @@ Admin routes are role-protected. Claim review accepts `NEEDS_EVIDENCE`, `APPROVE
 ## Campus-zone administration
 
 Administrators can list, create and update campus zones under `/api/v1/admin/zones`. Adjacency codes are validated against existing zones. Only administrators can change listing workflow state; a student cannot mark their own report as recovered through the listing update endpoint.
+
+## Session and profile hardening
+
+`PATCH /api/v1/auth/me` updates the authenticated user's full name and preferred language (`en`/`zh`). Roles are never writable through this route. Explicit null/blank required fields return 422. `POST /api/v1/auth/logout` requires authentication and persists a hash of the revoked token; subsequent use returns 401. New logins create distinct JWT identifiers.
+
+`GET /health/ready` returns 200 with `database: postgresql` when the configured database answers, or 503 with a sanitized error class. Production refuses SQLite and weak default secrets.

@@ -6,7 +6,7 @@
 
 ## What is implemented
 
-- Student registration, login, JWT sessions, student/admin roles and profile retrieval.
+- Student registration, login, JWT sessions, student/admin roles and profile editing and persistent logout revocation.
 - Lost and found listing creation, browsing, search, update and soft close.
 - Public listing photos with server-generated filenames, decoded-content/extension matching, a 25-megapixel limit, size limits and EXIF-stripping re-encoding.
 - Private claim evidence storage and administrator-only access to claim verification details.
@@ -152,20 +152,21 @@ Run `make seed` followed by `make evaluation`. Outputs are written to `docs/eval
 
 The included evaluation is deliberately labelled as a small synthetic demonstration. The recorded methods identify the fallback implementations currently available in this offline execution environment. The metrics must not be presented as real-world campus performance or as pretrained CLIP/E5 results.
 
-## Current verification snapshot
+## Current verification snapshot — 12 November 2026
 
-- Backend Python compilation: passed.
-- Backend API/workflow tests: 18 passed (`python -m pytest -q` from `backend/`).
-- FastAPI live smoke test: `/health/live` and `/health/ready` returned 200. A synthetic end-to-end workflow registered two students, created LOST/FOUND reports, uploaded an image, generated matches, submitted a claim, approved it as admin, confirmed both linked reports became `RECOVERED`, and confirmed the approval notification.
-- Synthetic seed: 4 lost reports, 5 found reports and 5 campus zones.
-- Synthetic evaluation: completed; results and limitations are in `docs/evaluation/evaluation_results.json`.
-- Meaningful first-party source lines: 2,541 across 59 source files; backend application 1,466 lines, frontend 288 lines, tests 275 lines, scripts 471 lines and migrations 39 lines. Backend + frontend application source: 1,754 lines, excluding blank lines, comments, dependencies and generated artifacts.
-- Frontend TS/TSX syntax parse: passed for all 24 current TypeScript/TSX source files. The full `tsc`/Next.js build remains unverified because React/Next packages could not be installed.
-- Next.js production build: not run because the execution environment could not reach the npm registry and frontend packages are not installed.
-- Live Gemini: not verified; no API key was supplied.
-- Real OpenCLIP/E5 inference: not verified; model packages/weights were unavailable in this offline environment.
-- PostgreSQL/pgvector Docker run: not verified; Docker is not installed in this environment.
-- Alembic migration: passed against a fresh SQLite database and created all 13 application tables plus `alembic_version`.
-- Vercel deployment: not created. No SmartFind GitHub repository exists yet; the available `ai` and `ai-coash` repositories are empty and have different names. The project was not pushed to either without confirmation.
+- **Frontend:** https://beihang-smartfind.vercel.app — existing project, Next.js 16.4.6.
+- **Backend:** https://smartfind-api-production.up.railway.app — independent SmartFind Railway project.
+- **Database:** persistent PostgreSQL 17 with pgvector, HNSW indexes and Alembic migrations. Uploads use a separate persistent volume.
+- **Tests:** 27 local backend tests passed; GitHub CI passed the original 24 against PostgreSQL/pgvector. Four deployed Playwright tests passed, including the complete report → matching → claim → administrator approval → recovery/notification flow. See [current verification](docs/verification/current-session.md).
+- **Frontend checks:** ESLint, TypeScript and production build passed. Python and npm audits reported zero known vulnerabilities in the checked environments.
+- **AI:** bilingual hash/text and HSV image fallback matching verified. Gemini SDK installed; live inference requires `GEMINI_API_KEY`. E5/OpenCLIP are disabled until optional packages, weights and sufficient resources are configured with `ENABLE_LOCAL_MODELS=true`.
+- **Screenshots:** genuine desktop/mobile and workflow screenshots are in [docs/screenshots](docs/screenshots/).
+- **Professor demonstration:** follow [docs/demonstration.md](docs/demonstration.md).
 
-See `docs/` and `report/` for the detailed implementation, verification evidence, deployment instructions and academic-report status. Read `docs/deployment.md` before creating cloud resources.
+## Private administrator access
+
+The administrator email is `admin@example.edu`. Its unique password is stored privately as `ADMIN_PASSWORD` in the **SmartFind** Railway backend Variables tab. It is not a public demo password and is not committed here. Use the provisioned value to sign in. Bootstrap does not reset an existing account's password when the variable changes.
+
+## Remaining limitations
+
+Live Gemini calls and pretrained E5/OpenCLIP inference have not been tested. Matching scores are similarities, not calibrated ownership probabilities. Some secondary/admin explanatory copy remains English; core navigation and workflow labels switch between English and Simplified Chinese. Rate limiting is in-process and intended for this single-replica academic demonstration; multi-replica production requires a shared limiter. Matching scans candidates for hybrid reranking and is sized for demonstration datasets. Email verification, password recovery, background AI jobs and notification delivery outside the application are not implemented. Database backups and long-term operational monitoring require an operator policy.

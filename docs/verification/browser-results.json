@@ -1,0 +1,53 @@
+{
+  "source": "Playwright against production SmartFind frontend/backend",
+  "stats": {
+    "startTime": "2026-11-12T05:56:14.280Z",
+    "duration": 30184.02,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "homepage, language switching and mobile layout",
+      "ok": true,
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 2736
+        }
+      ]
+    },
+    {
+      "title": "protected routes redirect and student registration works",
+      "ok": true,
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 4813
+        }
+      ]
+    },
+    {
+      "title": "login error is visible and does not establish a session",
+      "ok": true,
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1842
+        }
+      ]
+    },
+    {
+      "title": "students report, match, claim, and administrator approves recovery",
+      "ok": true,
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 18487
+        }
+      ]
+    }
+  ]
+}

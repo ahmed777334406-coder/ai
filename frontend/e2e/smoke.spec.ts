@@ -28,3 +28,12 @@ test('protected routes redirect and student registration works',async({page})=>{
   await expect(page.getByRole('status')).toHaveText('Profile saved');
   await page.reload(); await expect(page.getByLabel(/full name/i)).toHaveValue('Updated Fictional Student');
 });
+
+test('login error is visible and does not establish a session',async({page})=>{
+  await page.goto('/login');
+  await page.getByLabel(/email/i).fill(`missing-${Date.now()}@example.edu`);
+  await page.getByLabel(/password/i).fill('Incorrect-Test-Password!');
+  await page.locator('form button.primary-button').click();
+  await expect(page.locator('.alert.error')).toHaveText('Incorrect email or password');
+  expect(await page.evaluate(()=>localStorage.getItem('smartfind_token'))).toBeNull();
+});

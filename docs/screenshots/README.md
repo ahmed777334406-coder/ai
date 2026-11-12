@@ -1,5 +1,12 @@
-# Application screenshots
+# Verified screenshots
 
-This directory is reserved for genuine screenshots captured from the running Next.js application. No user-facing Next.js screenshots are included yet. The current execution environment could not install the Next.js dependencies, so the frontend could not be launched. Do not replace this note with AI-generated mockups or fabricated application evidence.
+Captured from the running SmartFind application on 12 November 2026 using Playwright. All student reports and ownership details shown are fictional.
 
-After installing dependencies and starting `make dev`, capture the required screens: landing page, login, registration, student dashboard, lost report, found report, Gemini image analysis, AI matches, candidate details, claim submission, claim approval, admin dashboard, analytics, English interface and Simplified Chinese interface.
+- `home-desktop.png`: production homepage.
+- `home-mobile.png`: production homepage at 390 × 844.
+- `report-mobile.png`: reporting form on mobile.
+- `matching-results.png`: real stored candidate match with fallback labeling.
+- `admin-claim-review.png`: administrator reviewing fictional private claim details.
+- `recovery-notifications.png`: claimant recovery notification after approval.
+
+These screenshots do not establish successful Gemini or pretrained model inference.

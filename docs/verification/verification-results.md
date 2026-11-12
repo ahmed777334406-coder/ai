@@ -1,3 +1,5 @@
+> Historical archive verification. For current deployed results, see [current-session.md](current-session.md).
+
 # Beihang SmartFind — Verification Results
 
 Date: 2026-11-11 (execution environment)

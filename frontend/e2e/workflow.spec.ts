@@ -13,10 +13,15 @@ async function register(page:Page,name:string,email:string,password:string) {
 async function report(page:Page,status:string,title:string) {
   page.on('dialog',dialog=>dialog.accept());
   await page.goto(`/report/${status}`);
-  await page.getByLabel('Title',{exact:true}).fill(title);
-  await page.getByLabel('Category',{exact:true}).selectOption('Bags');
+  if (status === 'LOST') {
+    await page.setViewportSize({width:390,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+    await page.screenshot({path:'../docs/screenshots/report-mobile.png',fullPage:true});
+  }
+  await page.getByLabel('Item title',{exact:true}).fill(title);
+  await page.getByLabel(/^Category/).selectOption('Bags');
   await page.getByLabel('Color',{exact:true}).fill('Black');
-  await page.getByLabel('Location',{exact:true}).selectOption({label:'University Library · 图书馆'});
+  await page.getByLabel(/^Campus zone/).selectOption({label:'University Library · 图书馆'});
   await page.getByLabel('Description',{exact:true}).fill(`${status==='LOST'?'I lost':'I found'} a black backpack near the Beihang library entrance. Fictional demonstration report.`);
   await page.locator('input[type="file"]').setInputFiles('../data/demo/images/backpack.png');
   await page.getByRole('button',{name:'Submit report',exact:true}).click();

@@ -26,7 +26,7 @@ text = MD_PATH.read_text(encoding="utf-8")
 lines = text.splitlines()
 start = next(i for i, line in enumerate(lines) if line.startswith("# 1. Creative Background"))
 body_lines = lines[start:]
-status_note = "This is an evidence-based project report. The FastAPI backend, 18 automated API/workflow tests, a live SQLite end-to-end claim/recovery flow, an Alembic migration against fresh SQLite, and the synthetic retrieval evaluation have been executed. The Next.js production build and browser screens, live Gemini calls, pretrained E5/OpenCLIP inference, and PostgreSQL/pgvector Docker deployment remain unverified because required packages, credentials or runtime services were unavailable. No missing evidence is invented in this report."
+status_note = 'The full application is committed to GitHub and deployed to the existing SmartFind Vercel project and an independent Railway backend. Backend tests pass locally; PostgreSQL/pgvector migrations and the original 24 tests passed in GitHub CI. The expanded suite has 27 passing local tests. Four deployed Playwright tests passed, including student registration, profile changes, English/Chinese switching, desktop/mobile layout, error handling, image uploads, candidate matching, claims, administrator approval, both recovery states and notifications. Gemini SDK integration is installed, but live Gemini calls remain unverified without GEMINI_API_KEY. E5/OpenCLIP integrations are optional and disabled in this deployment; tested results use explicitly labeled deterministic fallbacks. No real-world AI quality metrics are claimed.'
 
 # ---------- Markdown block parser ----------
 def parse_blocks(src_lines):
@@ -139,7 +139,7 @@ r=p.add_run("An AI-Powered Multimodal Campus Lost-and-Found Platform"); r.italic
 for _ in range(2): doc.add_paragraph()
 cover_table=doc.add_table(rows=4,cols=2); cover_table.alignment=WD_TABLE_ALIGNMENT.CENTER; cover_table.autofit=False
 cover_table.columns[0].width=Inches(1.45); cover_table.columns[1].width=Inches(4.2)
-cover_data=[("Student Name","Ahmed Salah Ahmed Al-Hammadi"),("Student ID","75062081"),("Class","________________________"),("Grade","________________________")]
+cover_data=[("Student Name","________________________"),("Student ID","________________________"),("Class","________________________"),("Grade","________________________")]
 for row,(label,value) in zip(cover_table.rows,cover_data):
     row.cells[0].text=label; row.cells[1].text=value
     for cell in row.cells:
@@ -202,7 +202,7 @@ for kind,value in blocks:
 
 doc.core_properties.title="Beihang SmartFind — Final Project Experiment Report"
 doc.core_properties.subject="Artificial Intelligence Practice AI+X project"
-doc.core_properties.author="Ahmed Salah Ahmed Al-Hammadi"
+doc.core_properties.author="________________________"
 doc.core_properties.keywords="Beihang, SmartFind, Gemini, computer vision, multilingual retrieval"
 doc.save(DOCX_OUT)
 
@@ -227,8 +227,8 @@ def pdf_inline(value):
 
 story=[]
 story += [Spacer(1,28*mm),Paragraph("北京航空航天大学",ParagraphStyle("cn",parent=center_style,fontSize=19,leading=25)),Spacer(1,5*mm),Paragraph("2026-2027 Academic Year, First Semester",center_style),Spacer(1,12*mm),Paragraph("《Artificial Intelligence Practice》",ParagraphStyle("course",parent=center_style,fontSize=15,leading=20)),Paragraph("FINAL PROJECT EXPERIMENT REPORT",center_style),Spacer(1,13*mm),Paragraph("Beihang SmartFind",cover_title),Paragraph("北航校园智能失物招领系统",cover_sub),Spacer(1,3*mm),Paragraph("An AI-Powered Multimodal Campus Lost-and-Found Platform",center_style),Spacer(1,16*mm)]
-cover_rows=[[Paragraph("<b>Student Name</b>",small_style),Paragraph("Ahmed Salah Ahmed Al-Hammadi",small_style)],
-            [Paragraph("<b>Student ID</b>",small_style),Paragraph("75062081",small_style)],
+cover_rows=[[Paragraph("<b>Student Name</b>",small_style),Paragraph("________________________",small_style)],
+            [Paragraph("<b>Student ID</b>",small_style),Paragraph("________________________",small_style)],
             [Paragraph("<b>Class</b>",small_style),Paragraph("________________________",small_style)],
             [Paragraph("<b>Grade</b>",small_style),Paragraph("________________________",small_style)]]
 t=Table(cover_rows,colWidths=[35*mm,90*mm],hAlign="CENTER")
@@ -270,7 +270,7 @@ def page_decor(canvas, doc_obj):
     canvas.drawCentredString(A4[0]/2, 9*mm, f"Beihang SmartFind  |  Page {doc_obj.page}")
     canvas.restoreState()
 
-pdf=SimpleDocTemplate(str(PDF_OUT),pagesize=A4,rightMargin=18*mm,leftMargin=18*mm,topMargin=19*mm,bottomMargin=17*mm,title="Beihang SmartFind — Final Project Experiment Report",author="Ahmed Salah Ahmed Al-Hammadi")
+pdf=SimpleDocTemplate(str(PDF_OUT),pagesize=A4,rightMargin=18*mm,leftMargin=18*mm,topMargin=19*mm,bottomMargin=17*mm,title="Beihang SmartFind — Final Project Experiment Report",author="________________________")
 pdf.build(story,onFirstPage=page_decor,onLaterPages=page_decor)
 
 # Re-open and verify outputs.
