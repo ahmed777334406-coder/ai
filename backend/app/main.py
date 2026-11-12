@@ -37,6 +37,12 @@ _rate_buckets = defaultdict(deque)
 @app.middleware("http")
 async def basic_rate_limit(request, call_next):
     path = request.url.path
+    if request.method in {"POST", "PATCH", "PUT", "DELETE"} and path.startswith("/api/v1") and not request.headers.get("authorization"):
+        if request.headers.get("x-smartfind-request") != "1":
+            return JSONResponse(status_code=403, content={"detail": "Missing CSRF request header"})
+        origin = request.headers.get("origin")
+        if origin and origin not in settings.cors_origin_list:
+            return JSONResponse(status_code=403, content={"detail": "Untrusted request origin"})
     if path.startswith("/api/v1/auth/login"):
         limit, window = 12, 60
     elif path.startswith("/api/v1/auth/register"):

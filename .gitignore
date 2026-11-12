@@ -31,3 +31,5 @@ release/
 playwright-report/
 test-results/
 *.db
+
+work/

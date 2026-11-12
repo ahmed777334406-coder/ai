@@ -3,34 +3,28 @@ test('homepage, language switching and mobile layout',async({page})=>{
   const errors:string[]=[]; page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/');
   await expect(page.locator('h1')).toBeVisible();
+  await expect(page.getByRole('link',{name:'Sign in',exact:true})).toHaveCount(0);
   await page.getByRole('button',{name:'中文',exact:true}).click();
   await expect(page.getByRole('button',{name:'English',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'English',exact:true}).click();
-  await page.screenshot({path:'../docs/screenshots/home-desktop.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
-  await expect(page.locator('h1')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
-  await page.screenshot({path:'../docs/screenshots/home-mobile.png',fullPage:true});
   expect(errors).toEqual([]);
 });
-test('protected routes redirect and student registration works',async({page})=>{
-  await page.goto('/dashboard'); await expect(page).toHaveURL(/\/login/);
-  await page.goto('/register');
-  await page.getByLabel(/full name/i).fill('Fictional Browser Student');
-  await page.getByLabel(/email/i).fill(`browser-${Date.now()}@example.edu`);
-  await page.getByLabel(/password/i).fill(`Private-Test-${Date.now()}!`);
-  await page.locator('form button[type="submit"], form button.primary-button').click();
+test('anonymous dashboard and report form need no login',async({page})=>{
+  await page.goto('/dashboard');
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole('heading',{level:1})).toBeVisible();
-  await page.goto('/profile');
-  await page.getByLabel(/full name/i).fill('Updated Fictional Student');
-  await page.getByRole('button',{name:'Save changes',exact:true}).click();
-  await expect(page.getByRole('status')).toHaveText('Profile saved');
-  await page.reload(); await expect(page.getByLabel(/full name/i)).toHaveValue('Updated Fictional Student');
+  await expect(page.locator('h1')).toBeVisible();
+  await expect(page.locator('.alert.error')).toHaveCount(0);
+  await page.goto('/report/LOST');
+  await expect(page.getByLabel('Item title',{exact:true})).toBeVisible();
+  const cookies=await page.context().cookies();
+  expect(cookies.find(c=>c.name==='smartfind_visitor')?.httpOnly).toBe(true);
+  expect(await page.evaluate(()=>localStorage.getItem('smartfind_token'))).toBeNull();
+  await page.goto('/register'); await expect(page).toHaveURL(/\/dashboard/);
 });
-
-test('login error is visible and does not establish a session',async({page})=>{
-  await page.goto('/login');
+test('administrator sign in rejects invalid credentials',async({page})=>{
+  await page.goto('/admin/login');
   await page.getByLabel(/email/i).fill(`missing-${Date.now()}@example.edu`);
   await page.getByLabel(/password/i).fill('Incorrect-Test-Password!');
   await page.locator('form button.primary-button').click();

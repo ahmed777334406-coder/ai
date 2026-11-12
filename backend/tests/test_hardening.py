@@ -14,8 +14,7 @@ def test_logout_revokes_token_and_requires_authentication(client):
     assert client.get('/api/v1/auth/me', headers=headers).status_code == 401
     assert client.post('/api/v1/listings', headers=headers, json={}).status_code == 401
     login = client.post('/api/v1/auth/login', json={"email":"student@example.edu", "password":"SecurePass123!"})
-    assert login.status_code == 200
-    assert client.get('/api/v1/auth/me', headers={"Authorization":f"Bearer {login.json()['access_token']}"}).status_code == 200
+    assert login.status_code == 401
 
 
 def test_profile_updates_persist_and_cannot_change_role(client):

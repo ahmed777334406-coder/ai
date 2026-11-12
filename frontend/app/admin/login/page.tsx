@@ -1,0 +1,8 @@
+"use client";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { api, setSession } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
+export default function LoginPage(){const {t}=useI18n();const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [error,setError]=useState("");const [busy,setBusy]=useState(false);const router=useRouter();
+async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{const data=await api<any>("/auth/login",{method:"POST",body:JSON.stringify({email,password})});setSession(data.access_token,data.user);const next=new URLSearchParams(window.location.search).get("next");const safeNext=next&&next.startsWith("/")&&!next.startsWith("//")?next:"/admin";router.replace(safeNext);}catch(err){setError(err instanceof Error?err.message:"Sign in failed");}finally{setBusy(false);}}
+return <div className="auth-wrap"><div className="auth-panel"><div className="eyebrow">WELCOME BACK</div><h1>{"Administrator sign in"}</h1><p>{"Authorized administrators only."}</p><form onSubmit={submit} className="form-stack"><label>{t("email")}<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="Administrator email"/></label><label>{t("password")}<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required placeholder="Your password"/></label>{error&&<div className="alert error">{error}</div>}<button className="primary-button full" disabled={busy}>{busy?t("signInBusy"):t("signIn")}</button></form></div></div>}

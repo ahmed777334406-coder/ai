@@ -3,26 +3,28 @@ from app.models import User, UserRole, CampusZone, Listing, ListingStatus, Listi
 from app.security import hash_password
 
 def register(client, email="student@example.edu"):
-    response = client.post("/api/v1/auth/register", json={"email": email, "full_name": "Test Student", "password": "SecurePass123!"})
-    assert response.status_code == 201, response.text
-    return response.json()["access_token"]
+    # Existing API regression cases use separately issued visitor credentials.
+    client.cookies.clear()
+    response = client.post("/api/v1/auth/session")
+    assert response.status_code == 200, response.text
+    token = client.cookies.get("smartfind_visitor")
+    client.cookies.clear()
+    return token
 
 def test_health_endpoints(client):
     assert client.get("/health/live").json()["status"] == "alive"
     assert client.get("/health/ready").json()["status"] == "ready"
 
-def test_register_login_and_profile(client):
+def test_visitor_session_and_profile(client):
     token = register(client)
     profile = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert profile.status_code == 200
-    assert profile.json()["email"] == "student@example.edu"
-    login = client.post("/api/v1/auth/login", json={"email": "student@example.edu", "password": "SecurePass123!"})
-    assert login.status_code == 200
+    assert profile.json()["full_name"] == "Anonymous visitor"
+    assert profile.json()["role"] == "STUDENT"
 
-def test_duplicate_registration_rejected(client):
-    register(client)
-    response = client.post("/api/v1/auth/register", json={"email": "student@example.edu", "full_name": "Another Student", "password": "SecurePass123!"})
-    assert response.status_code == 409
+
+def test_registration_removed(client):
+    assert client.post("/api/v1/auth/register", json={}).status_code == 404
 
 def test_listing_create_and_private_fields_not_public(client):
     token = register(client)

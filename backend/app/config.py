@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./smartfind.db"
     jwt_secret_key: str = "CHANGE_ME_FOR_LOCAL_DEVELOPMENT_ONLY"
     access_token_expire_minutes: int = 60 * 12
+    visitor_session_days: int = 30
     upload_dir: str = "./uploads"
     max_upload_mb: int = 8
     frontend_url: str = "http://localhost:3000"

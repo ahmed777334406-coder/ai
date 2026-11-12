@@ -1,172 +1,122 @@
 # Beihang SmartFind
 
-**北航校园智能失物招领系统** — an independent AI-powered, bilingual campus lost-and-found project for the Beihang University Artificial Intelligence Practice course.
+Bilingual campus lost-and-found application. Students can browse, report items,
+upload photographs, inspect matches, submit claims and receive in-app notifications
+without registering or entering an email, username or password.
 
-> This is an independent student project. It is not an official Beihang University service and has no access to official university systems or real student records. The included demonstration records are synthetic.
+## Live services
 
-## What is implemented
+- Website: https://beihang-smartfind.vercel.app
+- API: https://smartfind-api-production.up.railway.app
+- API documentation: https://smartfind-api-production.up.railway.app/docs
+- Source: https://github.com/ahmed777334406-coder/ai
 
-- Student registration, login, JWT sessions, student/admin roles and profile editing and persistent logout revocation.
-- Lost and found listing creation, browsing, search, update and soft close.
-- Public listing photos with server-generated filenames, decoded-content/extension matching, a 25-megapixel limit, size limits and EXIF-stripping re-encoding.
-- Private claim evidence storage and administrator-only access to claim verification details.
-- Gemini integration through the official Google Gen AI Python SDK, with structured item analysis, description assistance and evidence-grounded match explanations. It is optional at startup and degrades transparently when credentials or the SDK are unavailable.
-- Optional multilingual E5 text embeddings and OpenCLIP ViT-B/32 image embeddings. When those large model packages or weights are not available, the backend labels and uses a bilingual rule-hash text fallback and an HSV histogram image fallback; these are not represented as E5 or CLIP inference.
-- Hybrid LOST-to-FOUND matching with configurable weights, missing-signal weight redistribution, top-five ranking, evidence explanations and deduplicated notifications.
-- Same-status duplicate warnings. Possible duplicates are never deleted automatically.
-- Student claims, administrator review, linked LOST/FOUND recovery state transitions, audit events and in-app notifications.
-- Student and administrator dashboards, category/zone analytics, and English/Simplified Chinese translation for navigation, landing, authentication, reporting and key workflow labels. Remaining admin/secondary copy still needs final translation QA.
-- Synthetic demonstration dataset, repeatable seed script, evaluation script, CSV/JSON outputs and a chart.
-- PostgreSQL + pgvector schema and HNSW cosine indexes for production/local Docker; SQLite is the zero-service development/test fallback.
+## Visitor privacy and sessions
 
-## Repository layout
+The frontend automatically calls `POST /api/v1/auth/session`. The server generates
+32 cryptographically random bytes, creates a database principal with no usable
+password, and issues a signed, HttpOnly, SameSite=Lax cookie. Production cookies
+are Secure. The session lasts 30 days (`VISITOR_SESSION_DAYS`); clearing cookies,
+changing browsers or expiration loses access to that visitor's history. Reports
+remain public, but private identifying details, claims, evidence, matches and
+notifications are protected by server-side ownership checks.
+
+Student registration is removed. `/login` and `/register` redirect to the visitor
+dashboard. `/auth/login` accepts individually provisioned administrators only;
+the administrator UI is at `/admin/login`. No public demo administrator is created.
+Existing report ownership and database history are preserved. Anonymous principals
+reuse the existing users table, so no destructive ownership migration is needed.
+
+Mutating cookie requests require `X-SmartFind-Request: 1` and reject untrusted
+Origin headers. CORS allows only configured origins. The API rate limiter is per
+process; run one API worker/replica or replace it with shared limiting before
+scaling. Uploads validate type, size, decoded image content and extension, then
+re-encode images. Claim evidence is stored outside public media.
+
+## Matching and AI: actual behavior
+
+Matching ranks opposite-status reports using text, images, category, color,
+campus-zone adjacency and time decay. Scores are 0–100 similarity measures,
+**not ownership probabilities**. Missing signals are excluded and remaining
+weights normalized. Results contain component evidence, method names and an
+explanation. Administrators verify claims before marking recovery.
+
+Optional local inference uses multilingual E5-small and OpenCLIP ViT-B-32.
+Install `backend/requirements-ai.txt`, set `ENABLE_LOCAL_MODELS=true` and provision
+sufficient memory/model cache. Without these resources the documented alternatives
+are bilingual synonym/token hashing for text and OpenCV HSV histograms for images.
+These are real computed heuristics, labeled fallback matching; they do not identify
+objects or provide unrestricted multilingual understanding.
+
+The repository contains an optional Google Gemini adapter, but **no provider is
+inferred from an `AQ.` key prefix and no such key is sent to Google**. No live
+provider is configured for this upgrade. To enable a provider, first confirm its
+name, official documentation, protocol and image support. Rotate any key shared
+in chat and configure it only in backend secret settings. Only a confirmed Google
+key belongs in `GEMINI_API_KEY`. Generative image understanding and bilingual
+AI descriptions remain unavailable until a supported provider is confirmed.
+Rule-based extraction and templated explanations identify their fallback provider.
+
+## Local development
+
+Requires Python 3.11+ and Node.js 22+.
+
+```sh
+python -m venv .venv
+.venv/bin/pip install -r backend/requirements.txt
+cp .env.example .env
+PYTHONPATH=backend .venv/bin/alembic -c backend/alembic.ini upgrade head
+PYTHONPATH=backend .venv/bin/python scripts/bootstrap.py
+.venv/bin/uvicorn app.main:app --app-dir backend --port 8000
+```
+
+In another terminal:
+
+```sh
+cd frontend
+npm ci
+BACKEND_ORIGIN=http://localhost:8000 NEXT_PUBLIC_API_URL=/api/v1 npm run dev
+```
+
+SQLite is supported for development and isolated tests. Production requires
+PostgreSQL with pgvector and migrations. Existing Alembic migrations preserve
+schema and token revocation history. Do not run demo seeding in production.
+
+## Production configuration
+
+Railway uses `backend/Dockerfile` and `railway.json`, runs Alembic before startup,
+and keeps `UPLOAD_DIR=/data/uploads` on the existing persistent `/data` volume.
+Set `ENVIRONMENT=production`, `DATABASE_URL`, a strong unique `JWT_SECRET_KEY`,
+explicit HTTPS `CORS_ORIGINS`, and private `ADMIN_EMAIL` / `ADMIN_PASSWORD` for
+initial administrator provisioning. Do not reuse credentials across people.
+The bootstrap only creates a missing administrator; it does not rotate passwords.
+
+Vercel must use the existing `beihang-smartfind` project, root `frontend`:
 
 ```text
-frontend/       Next.js + React + TypeScript + Tailwind UI
-backend/        FastAPI, SQLAlchemy, Alembic, Gemini and embedding services
-backend/tests/  API and workflow tests
-backend/migrations/  database migrations
-data/demo/      generated synthetic item images and sample data
-scripts/        seed, evaluation, source-line counting and local development
- docs/          architecture, API, security and evaluation notes
-report/         academic report draft and final outputs
+NEXT_PUBLIC_API_URL=/api/v1
+NEXT_PUBLIC_API_ORIGIN=
+BACKEND_ORIGIN=https://smartfind-api-production.up.railway.app
 ```
 
-## Requirements
+API and public media rewrites keep browser traffic on the website's origin,
+which avoids third-party cookie restrictions. `BACKEND_ORIGIN` is server-side.
+Never put AI keys in `NEXT_PUBLIC_*`, source control or browser storage.
 
-- Python 3.11+
-- Node.js 22+
-- PostgreSQL 16 with pgvector for the full vector-database deployment, or SQLite for the local smoke-test path
-- Optional: Google Gemini API key, plus model dependencies/weights for multilingual E5 and OpenCLIP
+## Verification
 
-## Local development on macOS
-
-```bash
-# 1. From the project root
-cp .env.example .env
-
-# 2. Create a Python environment and install the backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r backend/requirements.txt
-
-# 3. Optional live AI/model packages (large downloads)
-pip install -r backend/requirements-ai.txt
-
-# 4. Install the Next.js dependencies
+```sh
+.venv/bin/pytest -q backend/tests
 cd frontend
-npm install
-cd ..
-
-# 5. Seed synthetic demo accounts, zones, listings and images
-make seed
-
-# 6. Start FastAPI and Next.js together
-make dev
+npm run lint
+npm run build
+npm run test:e2e -- e2e/smoke.spec.ts
 ```
 
-Open:
-
-- Frontend: http://localhost:3000
-- FastAPI health: http://localhost:8000/health/ready
-- Interactive API docs: http://localhost:8000/docs
-
-The default local database is SQLite. The backend creates its tables on startup for the quick-start path. Use `make migrate` to apply the Alembic migration explicitly.
-
-## Docker Compose (PostgreSQL + pgvector)
-
-```bash
-cp .env.example .env
-# Edit .env and set a strong JWT_SECRET_KEY, a unique ADMIN_PASSWORD,
-# and GEMINI_API_KEY if live Gemini is required.
-docker compose up --build
-# In a second terminal, seed the synthetic demo records:
-docker compose exec backend python /app/scripts/seed_demo.py
-```
-
-The Compose database uses `pgvector/pgvector:pg16`, a persistent database volume and a persistent upload volume. The backend image installs core dependencies by default. To include the large AI packages in the image, set `INSTALL_AI_DEPS=true` in `.env` before building. Model weights are downloaded lazily on first use and may require network access and substantial disk space.
-
-## AI configuration
-
-Set these in `.env`:
-
-```dotenv
-GEMINI_API_KEY=your-key
-GEMINI_MODEL=gemini-3.1-flash-lite
-TEXT_EMBEDDING_MODEL=intfloat/multilingual-e5-small
-IMAGE_EMBEDDING_MODEL=ViT-B-32
-AI_DEVICE=auto
-```
-
-All Gemini requests run on the backend. The API key is never sent to the browser. The model identifier is configurable because provider model availability can change; verify that the selected model is enabled for your Google AI Studio/API account before a live integration test. No Gemini key was included in this source package.
-
-`AI_DEVICE=auto` selects CUDA, Apple Silicon MPS or CPU when available. If E5 or OpenCLIP weights cannot be loaded, the API exposes the fallback method name in its responses. The fallback methods are useful for a basic demonstration but are not equivalent to the requested pretrained models.
-
-## Demo accounts
-
-After `make seed`:
-
-| Role | Email | Password |
-|---|---|---|
-| Student | `student@example.edu` | `StudentDemo123!` |
-| Student / finder | `finder@example.edu` | `FinderDemo123!` |
-| Administrator | `admin@example.edu` | value of `ADMIN_PASSWORD` in `.env` (default local-only value: `ChangeThisAdminPassword!`) |
-
-Change the administrator password and JWT secret before sharing or deploying the project. The default credentials are for local synthetic demonstration only.
-
-## Useful commands
-
-```bash
-make test        # backend API/workflow tests
-make seed        # seed synthetic demo data
-make migrate     # Alembic migration
-make evaluation  # run synthetic retrieval evaluation and generate CSV/JSON/chart
-make count       # count meaningful first-party source lines
-make build       # Python compile check + Next.js production build
-```
-
-## API overview
-
-All application APIs are versioned under `/api/v1/`.
-
-- `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
-- `GET/POST /listings`, `GET /listings/mine`, `GET /listings/{id}`, `PATCH/DELETE /listings/{id}`
-- `POST /listings/{id}/images`, `GET /listings/zones/list`
-- `GET /ai/status`, `POST /ai/analyze`, `POST /ai/description`, `POST /ai/search`, `POST /ai/assistant`
-- `POST /ai/match/{listing_id}`, `POST /ai/duplicates/check`, `POST /ai/duplicates/{listing_id}`
-- `GET /matches`, `GET /matches/{id}`, `POST /matches/{id}/feedback`
-- `POST /claims`, `GET /claims`, `GET /claims/{id}`, `POST /claims/{id}/evidence`
-- Admin-only private evidence download: `GET /admin/claims/{id}/evidence`
-- `GET /notifications`, `PATCH /notifications/{id}/read`
-- Admin: `/admin/dashboard`, `/admin/listings`, `/admin/claims`, `/admin/users`, `/admin/analytics`
-- Health: `/health/live`, `/health/ready`
-
-## Evaluation
-
-Run `make seed` followed by `make evaluation`. Outputs are written to `docs/evaluation/`:
-
-- `evaluation_results.json`
-- `retrieval_rankings.csv`
-- `cross_language_results.csv`
-- `mrr_comparison.png`
-
-The included evaluation is deliberately labelled as a small synthetic demonstration. The recorded methods identify the fallback implementations currently available in this offline execution environment. The metrics must not be presented as real-world campus performance or as pretrained CLIP/E5 results.
-
-## Current verification snapshot — 12 November 2026
-
-- **Frontend:** https://beihang-smartfind.vercel.app — existing project, Next.js 16.4.6.
-- **Backend:** https://smartfind-api-production.up.railway.app — independent SmartFind Railway project.
-- **Database:** persistent PostgreSQL 17 with pgvector, HNSW indexes and Alembic migrations. Uploads use a separate persistent volume.
-- **Tests:** 27 local backend tests passed; GitHub CI passed all 27 against PostgreSQL/pgvector. Four deployed Playwright tests passed, including the complete report → matching → claim → administrator approval → recovery/notification flow. See [current verification](docs/verification/current-session.md).
-- **Frontend checks:** ESLint, TypeScript and production build passed. Python and npm audits reported zero known vulnerabilities in the checked environments.
-- **AI:** bilingual hash/text and HSV image fallback matching verified. Gemini SDK installed; live inference requires `GEMINI_API_KEY`. E5/OpenCLIP are disabled until optional packages, weights and sufficient resources are configured with `ENABLE_LOCAL_MODELS=true`.
-- **Screenshots:** genuine desktop/mobile and workflow screenshots are in [docs/screenshots](docs/screenshots/).
-- **Professor demonstration:** follow [docs/demonstration.md](docs/demonstration.md).
-
-## Private administrator access
-
-The administrator email is `admin@example.edu`. Its unique password is stored privately as `ADMIN_PASSWORD` in the **SmartFind** Railway backend Variables tab. It is not a public demo password and is not committed here. Use the provisioned value to sign in. Bootstrap does not reset an existing account's password when the variable changes.
-
-## Remaining limitations
-
-Live Gemini calls and pretrained E5/OpenCLIP inference have not been tested. Matching scores are similarities, not calibrated ownership probabilities. Some secondary/admin explanatory copy remains English; core navigation and workflow labels switch between English and Simplified Chinese. Rate limiting is in-process and intended for this single-replica academic demonstration; multi-replica production requires a shared limiter. Matching scans candidates for hybrid reranking and is sized for demonstration datasets. Email verification, password recovery, background AI jobs and notification delivery outside the application are not implemented. Database backups and long-term operational monitoring require an operator policy.
+The full browser recovery test uses isolated visitor contexts and optionally a
+private administrator credentials JSON file specified by
+`SMARTFIND_TEST_CREDENTIALS`. Run against a test database, not public production
+records. `API_ORIGIN` and `BASE_URL` select its target. Backend tests cover reporting,
+image validation, matching, filters, claims, recovery review, notifications, session
+cookies, CSRF, visitor isolation and admin authorization. Live AI connectivity
+cannot pass without a confirmed provider and configured credential.

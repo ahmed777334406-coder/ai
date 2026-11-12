@@ -27,11 +27,12 @@ def _can_edit(item: Listing, user: User) -> bool:
 
 @router.get("")
 def list_listings(status: ListingStatus | None = None, category: str | None = None, zone_id: int | None = None,
-                  q: str | None = None, limit: int = 20, offset: int = 0, db: Session = Depends(get_db)):
+                  q: str | None = None, color: str | None = None, limit: int = 20, offset: int = 0, db: Session = Depends(get_db)):
     limit = max(1, min(limit, 50)); offset = max(0, offset)
     query = db.query(Listing).options(joinedload(Listing.owner), joinedload(Listing.zone)).filter(Listing.state != ListingState.CLOSED)
     if status: query = query.filter(Listing.status == status)
     if category: query = query.filter(Listing.category.ilike(f"%{category}%"))
+    if color: query = query.filter(Listing.color.ilike(f"%{color}%"))
     if zone_id: query = query.filter(Listing.zone_id == zone_id)
     if q: query = query.filter((Listing.title.ilike(f"%{q}%")) | (Listing.description.ilike(f"%{q}%")))
     total = query.count()

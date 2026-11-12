@@ -1,9 +1,2 @@
-"use client";
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { api, setSession } from "@/lib/api";
-import { useI18n } from "@/lib/i18n";
-export default function RegisterPage(){const {t,lang}=useI18n();const [fullName,setFullName]=useState("");const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [error,setError]=useState("");const [busy,setBusy]=useState(false);const router=useRouter();
-async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{const data=await api<any>("/auth/register",{method:"POST",body:JSON.stringify({full_name:fullName,email,password,preferred_language:lang})});setSession(data.access_token,data.user);router.push("/dashboard");}catch(err){setError(err instanceof Error?err.message:"Registration failed");}finally{setBusy(false);}}
-return <div className="auth-wrap"><div className="auth-panel"><div className="eyebrow">JOIN SMARTFIND</div><h1>{t("registerTitle")}</h1><p>{t("registerDesc")}</p><form onSubmit={submit} className="form-stack"><label>{t("fullName")}<input value={fullName} onChange={e=>setFullName(e.target.value)} required minLength={2} placeholder="Your name"/></label><label>{t("email")}<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="student@university.edu"/></label><label>{t("password")}<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required minLength={10} placeholder={t("passwordHint")}/></label>{error&&<div className="alert error">{error}</div>}<button className="primary-button full" disabled={busy}>{busy?t("creating"):t("register")}</button></form><div className="auth-foot">{t("alreadyRegistered")} <Link href="/login">{t("signIn")}</Link></div></div></div>}
+import { redirect } from "next/navigation";
+export default function Page(){ redirect("/dashboard"); }

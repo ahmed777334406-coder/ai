@@ -21,9 +21,9 @@ def verify_password(password: str, stored: str) -> bool:
 def _b64(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
 
-def create_access_token(user_id: int, role: str) -> str:
+def create_access_token(user_id: int, role: str, lifetime_seconds: int | None = None) -> str:
     header = _b64(json.dumps({"alg":"HS256","typ":"JWT"}, separators=(",", ":")).encode())
-    payload = _b64(json.dumps({"sub":str(user_id),"role":role,"jti":secrets.token_urlsafe(24),"exp":int(time.time()) + settings.access_token_expire_minutes*60}, separators=(",", ":")).encode())
+    payload = _b64(json.dumps({"sub":str(user_id),"role":role,"jti":secrets.token_urlsafe(24),"exp":int(time.time()) + (lifetime_seconds if lifetime_seconds is not None else settings.access_token_expire_minutes*60)}, separators=(",", ":")).encode())
     signing = f"{header}.{payload}".encode()
     signature = _b64(hmac.new(settings.jwt_secret_key.encode(), signing, hashlib.sha256).digest())
     return f"{header}.{payload}.{signature}"
