@@ -1,0 +1,4 @@
+lost_title,found_title,rank,top1_retrieved,text_method
+Black wireless earbuds,黑色蓝牙耳机盒,1,True,bilingual_rule_hash_fallback
+Blue wallet,蓝色钱包,1,True,bilingual_rule_hash_fallback
+Small key ring,钥匙串,1,True,bilingual_rule_hash_fallback

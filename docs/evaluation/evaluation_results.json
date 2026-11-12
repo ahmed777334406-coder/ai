@@ -1,0 +1,55 @@
+{
+  "dataset": "synthetic demo seed",
+  "lost_records": 4,
+  "found_records": 5,
+  "known_positive_pairs": 3,
+  "methods_observed": [
+    "bilingual_rule_hash_fallback",
+    "opencv_hsv_histogram_fallback"
+  ],
+  "metrics": {
+    "text": {
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    "image": {
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    "hybrid": {
+      "precision_at_5": 0.2,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    }
+  },
+  "cross_language_retrieval": [
+    {
+      "lost_title": "Black wireless earbuds",
+      "found_title": "黑色蓝牙耳机盒",
+      "rank": 1,
+      "top1_retrieved": true,
+      "text_method": "bilingual_rule_hash_fallback"
+    },
+    {
+      "lost_title": "Blue wallet",
+      "found_title": "蓝色钱包",
+      "rank": 1,
+      "top1_retrieved": true,
+      "text_method": "bilingual_rule_hash_fallback"
+    },
+    {
+      "lost_title": "Small key ring",
+      "found_title": "钥匙串",
+      "rank": 1,
+      "top1_retrieved": true,
+      "text_method": "bilingual_rule_hash_fallback"
+    }
+  ],
+  "limitations": [
+    "Synthetic records only; not real campus data.",
+    "Fallback embeddings are not equivalent to OpenCLIP or multilingual E5.",
+    "Metrics are descriptive for this small demonstration set and are not generalizable."
+  ]
+}

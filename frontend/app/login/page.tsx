@@ -1,0 +1,9 @@
+"use client";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { api, setSession } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
+export default function LoginPage(){const {t}=useI18n();const [email,setEmail]=useState("");const [password,setPassword]=useState("");const [error,setError]=useState("");const [busy,setBusy]=useState(false);const router=useRouter();
+async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{const data=await api<any>("/auth/login",{method:"POST",body:JSON.stringify({email,password})});setSession(data.access_token,data.user);const next=new URLSearchParams(window.location.search).get("next");const safeNext=next&&next.startsWith("/")&&!next.startsWith("//")?next:"/dashboard";router.replace(safeNext);}catch(err){setError(err instanceof Error?err.message:"Sign in failed");}finally{setBusy(false);}}
+return <div className="auth-wrap"><div className="auth-panel"><div className="eyebrow">WELCOME BACK</div><h1>{t("signInTitle")}</h1><p>{t("signInDesc")}</p><form onSubmit={submit} className="form-stack"><label>{t("email")}<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="student@university.edu"/></label><label>{t("password")}<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required placeholder="Your password"/></label>{error&&<div className="alert error">{error}</div>}<button className="primary-button full" disabled={busy}>{busy?t("signInBusy"):t("signIn")}</button></form><div className="auth-foot">{t("newToSmartFind")} <Link href="/register">{t("register")}</Link></div><div className="demo-note">Demo accounts are listed in the project README after local seeding.</div></div></div>}

@@ -1,0 +1,45 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: smartfind
+      POSTGRES_USER: smartfind
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartfind_local_only}
+    ports: ["5432:5432"]
+    volumes: ["smartfind_db:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartfind -d smartfind"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      args:
+        INSTALL_AI_DEPS: ${INSTALL_AI_DEPS:-false}
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://smartfind:${POSTGRES_PASSWORD:-smartfind_local_only}@db:5432/smartfind
+      UPLOAD_DIR: /app/uploads
+      FRONTEND_URL: http://localhost:3000
+    ports: ["8000:8000"]
+    volumes: ["smartfind_uploads:/app/uploads"]
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  frontend:
+    build: ./frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_API_ORIGIN: http://localhost:8000
+    ports: ["3000:3000"]
+    depends_on: [backend]
+volumes:
+  smartfind_db:
+  smartfind_uploads:

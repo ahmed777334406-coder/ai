@@ -1,0 +1,1 @@
+This is a copy of the original Beihang Artificial Intelligence Practice report template supplied for this project. The original Library file was not modified. `scripts/build_report.py` uses this copy as its formatting base.

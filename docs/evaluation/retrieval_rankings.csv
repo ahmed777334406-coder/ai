@@ -1,0 +1,61 @@
+mode,lost_title,found_title,rank,retrieval_score,hybrid_score,text_method,image_method
+text,Black wireless earbuds,黑色蓝牙耳机盒,1,0.3935,80.59,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Black wireless earbuds,Black backpack,2,0.277,54.7,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Black wireless earbuds,Green water bottle,3,0.0512,43.91,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Black wireless earbuds,蓝色钱包,4,0.031,44.28,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Black wireless earbuds,钥匙串,5,0.0,37.93,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Blue wallet,蓝色钱包,1,0.3093,77.9,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Blue wallet,Green water bottle,2,0.1803,42.77,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Blue wallet,钥匙串,3,0.0298,43.62,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Blue wallet,Black backpack,4,0.0,37.72,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Blue wallet,黑色蓝牙耳机盒,5,0.0,43.29,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Red backpack,Black backpack,1,0.4168,73.34,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Red backpack,Green water bottle,2,0.048,44.32,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Red backpack,钥匙串,3,0.0,43.5,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Red backpack,蓝色钱包,4,0.0,37.72,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Red backpack,黑色蓝牙耳机盒,5,0.0,37.83,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Small key ring,钥匙串,1,0.2953,77.45,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Small key ring,Black backpack,2,0.0812,46.09,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Small key ring,蓝色钱包,3,0.0212,43.35,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Small key ring,Green water bottle,4,0.0,39.13,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+text,Small key ring,黑色蓝牙耳机盒,5,0.0,37.93,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Black wireless earbuds,黑色蓝牙耳机盒,1,1.0,80.59,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Black wireless earbuds,钥匙串,2,0.995,37.93,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Black wireless earbuds,Green water bottle,3,0.9913,43.91,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Black wireless earbuds,Black backpack,4,0.9702,54.7,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Black wireless earbuds,蓝色钱包,5,0.9634,44.28,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Blue wallet,蓝色钱包,1,1.0,77.9,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Blue wallet,钥匙串,2,0.9643,43.62,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Blue wallet,黑色蓝牙耳机盒,3,0.9634,43.29,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Blue wallet,Green water bottle,4,0.9617,42.77,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Blue wallet,Black backpack,5,0.9431,37.72,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Red backpack,Black backpack,1,1.0,73.34,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Red backpack,钥匙串,2,0.9709,43.5,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Red backpack,黑色蓝牙耳机盒,3,0.9702,37.83,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Red backpack,Green water bottle,4,0.9684,44.32,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Red backpack,蓝色钱包,5,0.9431,37.72,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Small key ring,钥匙串,1,1.0,77.45,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Small key ring,黑色蓝牙耳机盒,2,0.995,37.93,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Small key ring,Green water bottle,3,0.9936,39.13,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Small key ring,Black backpack,4,0.9709,46.09,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+image,Small key ring,蓝色钱包,5,0.9643,43.35,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Black wireless earbuds,黑色蓝牙耳机盒,1,0.8059,80.59,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Black wireless earbuds,Black backpack,2,0.547,54.7,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Black wireless earbuds,蓝色钱包,3,0.4428,44.28,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Black wireless earbuds,Green water bottle,4,0.4391,43.91,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Black wireless earbuds,钥匙串,5,0.3793,37.93,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Blue wallet,蓝色钱包,1,0.779,77.9,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Blue wallet,钥匙串,2,0.4362,43.62,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Blue wallet,黑色蓝牙耳机盒,3,0.4329,43.29,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Blue wallet,Green water bottle,4,0.4277,42.77,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Blue wallet,Black backpack,5,0.3772,37.72,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Red backpack,Black backpack,1,0.7334,73.34,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Red backpack,Green water bottle,2,0.4432,44.32,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Red backpack,钥匙串,3,0.435,43.5,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Red backpack,黑色蓝牙耳机盒,4,0.3783,37.83,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Red backpack,蓝色钱包,5,0.3772,37.72,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Small key ring,钥匙串,1,0.7745,77.45,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Small key ring,Black backpack,2,0.4609,46.09,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Small key ring,蓝色钱包,3,0.4335,43.35,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Small key ring,Green water bottle,4,0.3913,39.13,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback
+hybrid,Small key ring,黑色蓝牙耳机盒,5,0.3793,37.93,bilingual_rule_hash_fallback,opencv_hsv_histogram_fallback

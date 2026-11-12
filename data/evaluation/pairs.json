@@ -1,0 +1,10 @@
+{
+  "dataset": "Beihang SmartFind synthetic evaluation v1",
+  "notice": "Synthetic records only. These examples are not real university reports or measured campus recovery outcomes.",
+  "pairs": [
+    {"lost_title": "Black wireless earbuds", "found_title": "黑色蓝牙耳机盒", "ground_truth_match": true, "cross_language": true},
+    {"lost_title": "Blue wallet", "found_title": "蓝色钱包", "ground_truth_match": true, "cross_language": true},
+    {"lost_title": "Red backpack", "found_title": "Black backpack", "ground_truth_match": false, "cross_language": false},
+    {"lost_title": "Small key ring", "found_title": "钥匙串", "ground_truth_match": true, "cross_language": true}
+  ]
+}

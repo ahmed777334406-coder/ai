@@ -1,0 +1,5 @@
+# Optional model integrations. These packages and their model weights are large.
+google-genai>=1.0
+sentence-transformers>=3.4
+open_clip_torch>=2.30
+torch>=2.5

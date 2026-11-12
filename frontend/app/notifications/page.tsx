@@ -1,0 +1,6 @@
+"use client";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import { PageHeading, EmptyState } from "@/components/Ui";
+import { useI18n } from "@/lib/i18n";
+export default function NotificationsPage(){const {t}=useI18n();const [rows,setRows]=useState<any[]>([]);const [error,setError]=useState("");async function load(){try{setRows(await api<any[]>("/notifications"));}catch(e){setError(e instanceof Error?e.message:"Could not load notifications");}}useEffect(()=>{load();},[]);async function mark(id:number){await api(`/notifications/${id}/read`,{method:"PATCH"});load();}return <div className="page-stack"><PageHeading eyebrow="UPDATES" title={t("notificationsTitle")} description={t("notificationsDesc")}/>{error&&<div className="alert error">{error}</div>}{rows.length?rows.map(n=><div className={`notice-row ${n.is_read?"read":"unread"}`} key={n.id}><div><strong>{n.title}</strong><p>{n.body}</p><small>{new Date(n.created_at).toLocaleString()}</small></div>{!n.is_read&&<button className="text-link" onClick={()=>mark(n.id)}>Mark as read</button>}</div>):!error&&<EmptyState title={t("allCaughtUp")} description="New match and claim updates will appear here."/>}</div>}

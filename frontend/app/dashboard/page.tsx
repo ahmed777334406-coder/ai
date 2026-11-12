@@ -1,0 +1,14 @@
+"use client";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { api } from "@/lib/api";
+import { PageHeading, StatCard, EmptyState } from "@/components/Ui";
+import ItemCard from "@/components/ItemCard";
+import { ArrowUpRight, Bell, FilePlus2, Search, Sparkles } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+export default function DashboardPage(){const {t}=useI18n();const [items,setItems]=useState<any[]>([]);const [matches,setMatches]=useState<any[]>([]);const [claims,setClaims]=useState<any[]>([]);const [notices,setNotices]=useState<any[]>([]);const [error,setError]=useState("");
+useEffect(()=>{Promise.all([api<any[]>("/listings/mine"),api<any[]>("/matches"),api<any[]>("/claims"),api<any[]>("/notifications")]).then(([a,b,c,d])=>{setItems(a);setMatches(b);setClaims(c);setNotices(d);}).catch(e=>setError(e.message));},[]);
+const lost=items.filter(x=>x.status==="LOST").length,found=items.filter(x=>x.status==="FOUND").length;
+return <div className="page-stack"><PageHeading eyebrow="STUDENT WORKSPACE" title={t("dashboardTitle")} description={t("dashboardDesc")} action={<Link className="primary-button" href="/report/LOST"><FilePlus2 size={16}/> New report</Link>}/>{error&&<div className="alert error">{error} — please sign in first.</div>}<div className="stats-grid"><StatCard label={t("myReports")} value={items.length} detail={`${lost} lost · ${found} found`}/><StatCard label={t("potentialMatches")} value={matches.length} detail={t("pendingReview")} icon={<Sparkles size={17}/>}/><StatCard label={t("claimCount")} value={claims.length} detail={t("claimCountDesc")}/><StatCard label="Notifications" value={notices.filter(n=>!n.is_read).length} detail={t("unreadUpdates")} icon={<Bell size={17}/>}/></div>
+<div className="section-head"><div><div className="eyebrow">{t("recentActivity")}</div><h2>{t("latestReports")}</h2></div><Link href="/listings/LOST" className="text-link">{t("browseAll")} <ArrowUpRight size={15}/></Link></div>{items.length?<div className="item-grid">{items.slice(0,3).map(item=><ItemCard key={item.id} item={item}/>)}</div>:<EmptyState title={t("noReportsYet")} description={t("noReportsDesc")}/>}
+<div className="quick-grid"><Link href="/report/LOST" className="quick-card"><span className="quick-icon"><Search/></span><strong>{t("quickLostTitle")}</strong><p>{t("quickLostDesc")}</p><ArrowUpRight size={17}/></Link><Link href="/report/FOUND" className="quick-card"><span className="quick-icon"><FilePlus2/></span><strong>{t("quickFoundTitle")}</strong><p>{t("quickFoundDesc")}</p><ArrowUpRight size={17}/></Link><Link href="/matches" className="quick-card"><span className="quick-icon"><Sparkles/></span><strong>{t("quickMatchesTitle")}</strong><p>{t("quickMatchesDesc")}</p><ArrowUpRight size={17}/></Link></div></div>}

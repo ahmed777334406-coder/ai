@@ -1,0 +1,6 @@
+"use client";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import { PageHeading, StatCard } from "@/components/Ui";
+import { useI18n } from "@/lib/i18n";
+export default function AdminAnalyticsPage(){const {t}=useI18n();const [data,setData]=useState<any>(null);const [error,setError]=useState("");useEffect(()=>{api<any>("/admin/analytics").then(setData).catch(e=>setError(e.message));},[]);return <div className="page-stack"><PageHeading eyebrow="ADMINISTRATION" title={t("analytics")} description="Metrics are calculated from the records currently stored in this database."/>{error&&<div className="alert error">{error}</div>}{data&&<><div className="stats-grid"><StatCard label="Total listings" value={data.total_listings}/><StatCard label="Recovered" value={data.recovered}/><StatCard label="Recovery rate" value={`${(data.recovery_rate*100).toFixed(1)}%`}/><StatCard label="Categories" value={data.by_category.length}/></div><div className="panel"><h2>Reports by category</h2><div className="bar-list">{data.by_category.map((x:any)=><div className="bar-row" key={x.category}><span>{x.category}</span><div><i style={{width:`${Math.max(4,x.count/Math.max(1,data.total_listings)*100)}%`}}/></div><b>{x.count}</b></div>)}</div><p className="muted">{data.note}</p></div></>}</div>}
