@@ -1,0 +1,36 @@
+name: Verify SmartFind
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: smartfind
+          POSTGRES_PASSWORD: local-ci-only
+          POSTGRES_DB: smartfind
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U smartfind" --health-interval 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://smartfind:local-ci-only@localhost:5432/smartfind
+      TEST_DATABASE_URL: postgresql+psycopg://smartfind:local-ci-only@localhost:5432/smartfind
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: python -m venv .venv
+      - run: .venv/bin/pip install -r backend/requirements.txt
+      - run: cd backend && ../.venv/bin/alembic upgrade head && ../.venv/bin/alembic current && ../.venv/bin/pytest -q
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_PUBLIC_API_URL: https://smartfind-api-production.up.railway.app/api/v1
+      NEXT_PUBLIC_API_ORIGIN: https://smartfind-api-production.up.railway.app
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - run: npm ci
+      - run: npm run lint && npm run typecheck && npm run build

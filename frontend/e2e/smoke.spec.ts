@@ -1,0 +1,30 @@
+import { test, expect } from '@playwright/test';
+test('homepage, language switching and mobile layout',async({page})=>{
+  const errors:string[]=[]; page.on('pageerror',e=>errors.push(e.message));
+  await page.goto('/');
+  await expect(page.locator('h1')).toBeVisible();
+  await page.getByRole('button',{name:'中文',exact:true}).click();
+  await expect(page.getByRole('button',{name:'English',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'English',exact:true}).click();
+  await page.screenshot({path:'../docs/screenshots/home-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  await expect(page.locator('h1')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+  await page.screenshot({path:'../docs/screenshots/home-mobile.png',fullPage:true});
+  expect(errors).toEqual([]);
+});
+test('protected routes redirect and student registration works',async({page})=>{
+  await page.goto('/dashboard'); await expect(page).toHaveURL(/\/login/);
+  await page.goto('/register');
+  await page.getByLabel(/full name/i).fill('Fictional Browser Student');
+  await page.getByLabel(/email/i).fill(`browser-${Date.now()}@example.edu`);
+  await page.getByLabel(/password/i).fill(`Private-Test-${Date.now()}!`);
+  await page.locator('form button[type="submit"], form button.primary-button').click();
+  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page.getByRole('heading',{level:1})).toBeVisible();
+  await page.goto('/profile');
+  await page.getByLabel(/full name/i).fill('Updated Fictional Student');
+  await page.getByRole('button',{name:'Save changes',exact:true}).click();
+  await expect(page.getByRole('status')).toHaveText('Profile saved');
+  await page.reload(); await expect(page.getByLabel(/full name/i)).toHaveValue('Updated Fictional Student');
+});

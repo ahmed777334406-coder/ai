@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
+from app.config import settings
 from app.dependencies import get_current_user
 from app.models import User, Listing, ListingStatus, ListingState, TextEmbedding, Match
 from app.schemas import SearchRequest, DescriptionRequest, DuplicateCheckRequest
@@ -13,8 +14,8 @@ router = APIRouter(prefix="/ai", tags=["artificial intelligence"])
 
 @router.get("/status")
 def ai_status():
-    return {"gemini": gemini_service.status(), "text_embedding": {"model": "intfloat/multilingual-e5-small", "status": "lazy-loaded; rule fallback if unavailable"},
-            "image_embedding": {"model": "OpenCLIP ViT-B/32", "status": "lazy-loaded; HSV histogram fallback if unavailable"}}
+    return {"gemini": gemini_service.status(), "text_embedding": {"model": "intfloat/multilingual-e5-small", "enabled": settings.enable_local_models, "status": "lazy-loaded; rule fallback if unavailable" if settings.enable_local_models else "disabled; bilingual rule/hash fallback"},
+            "image_embedding": {"model": "OpenCLIP ViT-B/32", "enabled": settings.enable_local_models, "status": "lazy-loaded; HSV histogram fallback if unavailable" if settings.enable_local_models else "disabled; HSV histogram fallback"}}
 
 @router.post("/analyze")
 def analyze_text(payload: SearchRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):

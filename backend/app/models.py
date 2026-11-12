@@ -21,9 +21,9 @@ class EmbeddingVector(TypeDecorator):
             return dialect.type_descriptor(PgVector(self.dimensions))
         return dialect.type_descriptor(JSON())
     def process_result_value(self, value, dialect):
-        return list(value) if value is not None else None
+        return [float(v) for v in value] if value is not None else None
     def process_bind_param(self, value, dialect):
-        return list(value) if value is not None else None
+        return [float(v) for v in value] if value is not None else None
 
 class ListingStatus(str, enum.Enum):
     LOST = "LOST"

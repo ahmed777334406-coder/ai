@@ -10,7 +10,12 @@ from app.main import app, _rate_buckets
 @pytest.fixture()
 def client():
     _rate_buckets.clear()
-    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    test_url = os.environ.get("TEST_DATABASE_URL", "sqlite://")
+    engine = create_engine(test_url, **({"connect_args":{"check_same_thread": False}, "poolclass":StaticPool} if test_url.startswith("sqlite") else {}))
+    if not test_url.startswith("sqlite"):
+        from sqlalchemy import text
+        with engine.begin() as connection:
+            connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
     TestingSession = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
     Base.metadata.create_all(engine)
     def override_get_db():
