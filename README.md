@@ -48,14 +48,20 @@ are bilingual synonym/token hashing for text and OpenCV HSV histograms for image
 These are real computed heuristics, labeled fallback matching; they do not identify
 objects or provide unrestricted multilingual understanding.
 
-The repository contains an optional Google Gemini adapter, but **no provider is
-inferred from an `AQ.` key prefix and no such key is sent to Google**. No live
-provider is configured for this upgrade. To enable a provider, first confirm its
-name, official documentation, protocol and image support. Rotate any key shared
-in chat and configure it only in backend secret settings. Only a confirmed Google
-key belongs in `GEMINI_API_KEY`. Generative image understanding and bilingual
-AI descriptions remain unavailable until a supported provider is confirmed.
-Rule-based extraction and templated explanations identify their fallback provider.
+Google AI Studio is the confirmed provider. Production uses the official Google
+Gen AI SDK with `gemini-3-flash-preview`, configured in backend Railway variables.
+The previous `gemini-2.5-flash` model returned NOT_FOUND for this account;
+`gemini-3.8-flash` returned temporary UNAVAILABLE during verification.
+The working model supports description improvement, image analysis and structured
+matching explanations. Text/image ranking still reports its actual embedding or
+heuristic methods independently from the explanation provider.
+
+Keys are kept only in backend environment variables, never in this repository or
+frontend variables. Rotate keys shared in chat. Provider outages and errors use
+explicitly labeled fallback results; configuration alone does not prove a live
+request succeeded. `provider=google_gemini` in an operation response identifies a
+successful live call. Description requests can select English or Simplified Chinese
+with `target_language`.
 
 ## Local development
 
@@ -118,5 +124,4 @@ private administrator credentials JSON file specified by
 `SMARTFIND_TEST_CREDENTIALS`. Run against a test database, not public production
 records. `API_ORIGIN` and `BASE_URL` select its target. Backend tests cover reporting,
 image validation, matching, filters, claims, recovery review, notifications, session
-cookies, CSRF, visitor isolation and admin authorization. Live AI connectivity
-cannot pass without a confirmed provider and configured credential.
+cookies, CSRF, visitor isolation and admin authorization. Live AI connectivity is checked separately against the configured Google model.
