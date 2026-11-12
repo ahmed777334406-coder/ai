@@ -14,8 +14,8 @@
 | Check | Actual result |
 |---|---|
 | Expanded backend suite, isolated SQLite | 27 passed |
-| GitHub Actions PostgreSQL/pgvector migrations and initial suite | 24 passed; backend job succeeded in run 43164251804 |
-| GitHub frontend job | Lint, typecheck and build succeeded in run 43164251804 |
+| GitHub Actions PostgreSQL/pgvector migrations and expanded suite | 27 passed; backend job succeeded in run 43165030326 |
+| GitHub frontend job | Lint, typecheck and build succeeded in run 43165030326 |
 | Local final frontend lint/typecheck/build | Passed on Next.js 16.4.6 / React 19.3.1 |
 | Deployed Playwright tests | 4 passed in 30.2 seconds |
 | Python dependency audit | No known vulnerabilities in audited environment |
@@ -42,3 +42,7 @@ The explicitly approved administrator is `admin@example.edu`; the generated pass
 ## Remaining operational limitations
 
 Some secondary/admin UI copy remains English. University identity verification, password-reset email and external notification channels are not implemented. Rate limiting is in-process and single-instance; matching reranks candidates in Python and synchronous inference can increase latency. Operator-managed backups, monitoring and larger-scale capacity testing remain necessary before institutional production use. The local Docker PostgreSQL test was interrupted by disk exhaustion; the PostgreSQL evidence above comes from successful GitHub CI and the actual Railway deployment, not that local attempt.
+
+## Redeployment persistence verification
+
+Railway redeployment `eb8c7da0-e00a-4fbc-a860-0b4e79d1f8a4` successfully replaced the previous backend deployment. A preceding generic redeploy failed in build detection before release; setting the Dockerfile path explicitly corrected it. The successful replacement retained the same PostgreSQL database and upload volume. Persistence checks compare four recovered listings, four image SHA-256 checksums and a previously revoked token before and after the replacement. A brief 502 was observed during the volume-backed service replacement; this academic single-replica deployment does not provide zero-downtime releases.

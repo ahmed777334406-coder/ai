@@ -157,7 +157,7 @@ The included evaluation is deliberately labelled as a small synthetic demonstrat
 - **Frontend:** https://beihang-smartfind.vercel.app — existing project, Next.js 16.4.6.
 - **Backend:** https://smartfind-api-production.up.railway.app — independent SmartFind Railway project.
 - **Database:** persistent PostgreSQL 17 with pgvector, HNSW indexes and Alembic migrations. Uploads use a separate persistent volume.
-- **Tests:** 27 local backend tests passed; GitHub CI passed the original 24 against PostgreSQL/pgvector. Four deployed Playwright tests passed, including the complete report → matching → claim → administrator approval → recovery/notification flow. See [current verification](docs/verification/current-session.md).
+- **Tests:** 27 local backend tests passed; GitHub CI passed all 27 against PostgreSQL/pgvector. Four deployed Playwright tests passed, including the complete report → matching → claim → administrator approval → recovery/notification flow. See [current verification](docs/verification/current-session.md).
 - **Frontend checks:** ESLint, TypeScript and production build passed. Python and npm audits reported zero known vulnerabilities in the checked environments.
 - **AI:** bilingual hash/text and HSV image fallback matching verified. Gemini SDK installed; live inference requires `GEMINI_API_KEY`. E5/OpenCLIP are disabled until optional packages, weights and sufficient resources are configured with `ENABLE_LOCAL_MODELS=true`.
 - **Screenshots:** genuine desktop/mobile and workflow screenshots are in [docs/screenshots](docs/screenshots/).

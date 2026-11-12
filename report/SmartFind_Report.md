@@ -8,13 +8,13 @@
 ### 北航校园智能失物招领系统
 ### An AI-Powered Multimodal Campus Lost-and-Found Platform
 
-**Student Name:** ________________________  
-**Student ID:** ________________________  
+**Student Name:** ________________________
+**Student ID:** ________________________
 **Class:** ____________________  
 **Grade:** ____________________  
 **Report Date:** November 2026  
 
-> **Implementation status (12 November 2026):** The full application is committed to GitHub and deployed to the existing SmartFind Vercel project and an independent Railway backend. Backend tests pass locally; PostgreSQL/pgvector migrations and the original 24 tests passed in GitHub CI. The expanded suite has 27 passing local tests. Four deployed Playwright tests passed, including student registration, profile changes, English/Chinese switching, desktop/mobile layout, error handling, image uploads, candidate matching, claims, administrator approval, both recovery states and notifications. Gemini SDK integration is installed, but live Gemini calls remain unverified without GEMINI_API_KEY. E5/OpenCLIP integrations are optional and disabled in this deployment; tested results use explicitly labeled deterministic fallbacks. No real-world AI quality metrics are claimed.
+> **Implementation status (12 November 2026):** The full application is committed to GitHub and deployed to the existing SmartFind Vercel project and an independent Railway backend. Backend tests pass locally; PostgreSQL/pgvector migrations and all 27 expanded tests passed in GitHub CI. The expanded suite has 27 passing local tests. Four deployed Playwright tests passed, including student registration, profile changes, English/Chinese switching, desktop/mobile layout, error handling, image uploads, candidate matching, claims, administrator approval, both recovery states and notifications. Gemini SDK integration is installed, but live Gemini calls remain unverified without GEMINI_API_KEY. E5/OpenCLIP integrations are optional and disabled in this deployment; tested results use explicitly labeled deterministic fallbacks. No real-world AI quality metrics are claimed.
 
 ---
 
@@ -140,7 +140,7 @@ All three known cross-language examples ranked their corresponding Chinese FOUND
 
 The frontend was built with patched Next.js 16.4.6, React and TypeScript, then deployed to the existing beihang-smartfind Vercel project. ESLint, TypeScript checking and production compilation all completed successfully. The backend runs independently on Railway in a dedicated SmartFind project. Its PostgreSQL 17 service contains pgvector and persistent storage; the application uses an independent volume for uploaded images and private evidence. The readiness endpoint returns HTTP 200 with database `postgresql`; database failures return HTTP 503.
 
-GitHub CI completed migrations and all 24 initial API/workflow tests against PostgreSQL/pgvector. The expanded local suite passes 27 tests, adding rejection, login throttling and listing-patch validation. Four Playwright tests executed against the public frontend and backend. They verified registration and profile persistence, protected-route redirects, login errors, English/Chinese switching, desktop and 390-pixel mobile layouts, two student reports with image uploads, ranked fallback matching, a claim, administrator approval, recovery of both linked reports, and notifications to both students. Genuine screenshots are stored in `docs/screenshots/`. No screenshot depicts a successful Gemini API call.
+GitHub CI completed migrations and all 27 expanded API/workflow tests against PostgreSQL/pgvector. The expanded local suite passes 27 tests, adding rejection, login throttling and listing-patch validation. Four Playwright tests executed against the public frontend and backend. They verified registration and profile persistence, protected-route redirects, login errors, English/Chinese switching, desktop and 390-pixel mobile layouts, two student reports with image uploads, ranked fallback matching, a claim, administrator approval, recovery of both linked reports, and notifications to both students. Genuine screenshots are stored in `docs/screenshots/`. No screenshot depicts a successful Gemini API call.
 
 Live Gemini calls require a server-side API key and remain unverified. E5 and OpenCLIP model loading is available behind an explicit configuration flag, but the current deployment uses bilingual rule-hash text vectors and HSV image histograms. The UI exposes the fallback label. Model availability is not the same as empirical retrieval quality. The small synthetic evaluation remains a pipeline demonstration and must not be generalized to real campus performance.
 
@@ -200,7 +200,7 @@ The route modules separate authentication, listings, AI, matches, claims, notifi
 
 ## 9.6 Final implementation status
 
-The full application is committed to GitHub and deployed to the existing SmartFind Vercel project and an independent Railway backend. Backend tests pass locally; PostgreSQL/pgvector migrations and the original 24 tests passed in GitHub CI. The expanded suite has 27 passing local tests. Four deployed Playwright tests passed, including student registration, profile changes, English/Chinese switching, desktop/mobile layout, error handling, image uploads, candidate matching, claims, administrator approval, both recovery states and notifications. Gemini SDK integration is installed, but live Gemini calls remain unverified without GEMINI_API_KEY. E5/OpenCLIP integrations are optional and disabled in this deployment; tested results use explicitly labeled deterministic fallbacks. No real-world AI quality metrics are claimed.
+The full application is committed to GitHub and deployed to the existing SmartFind Vercel project and an independent Railway backend. Backend tests pass locally; PostgreSQL/pgvector migrations and all 27 expanded tests passed in GitHub CI. The expanded suite has 27 passing local tests. Four deployed Playwright tests passed, including student registration, profile changes, English/Chinese switching, desktop/mobile layout, error handling, image uploads, candidate matching, claims, administrator approval, both recovery states and notifications. Gemini SDK integration is installed, but live Gemini calls remain unverified without GEMINI_API_KEY. E5/OpenCLIP integrations are optional and disabled in this deployment; tested results use explicitly labeled deterministic fallbacks. No real-world AI quality metrics are claimed.
 
 ### Operational boundaries
 
