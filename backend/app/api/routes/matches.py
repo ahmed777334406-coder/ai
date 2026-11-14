@@ -10,6 +10,7 @@ router = APIRouter(prefix="/matches", tags=["potential matches"])
 
 def _visible(match: Match, user: User, db: Session) -> bool:
     lost, found = db.get(Listing, match.lost_listing_id), db.get(Listing, match.found_listing_id)
+    if lost and found and lost.owner_id == found.owner_id: return False
     return user.role == UserRole.ADMIN or bool(lost and found and (lost.owner_id == user.id or found.owner_id == user.id))
 
 @router.get("")

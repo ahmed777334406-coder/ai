@@ -1,0 +1,17 @@
+{
+  "session_created": true,
+  "analyze": {
+    "elapsed_seconds": 2.61,
+    "provider": "google_gemini",
+    "gemini_live": true,
+    "response_valid": true,
+    "error": null
+  },
+  "description": {
+    "elapsed_seconds": 3.69,
+    "provider": "google_gemini",
+    "gemini_live": null,
+    "response_valid": true,
+    "error": null
+  }
+}

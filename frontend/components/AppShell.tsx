@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 
 const links = [
+  {href:"/smart-search",key:"smartSearch",icon:Search,auth:false},
   {href:"/dashboard",key:"dashboard",icon:LayoutDashboard,auth:true},
   {href:"/listings/LOST",key:"lost",icon:Search,auth:false},
   {href:"/listings/FOUND",key:"found",icon:Bookmark,auth:false},
@@ -26,7 +27,7 @@ export default function AppShell({children}:{children:React.ReactNode}) {
   useEffect(()=>{
     const token=!!getToken();
     let currentRole="STUDENT";
-    const raw=localStorage.getItem("smartfind_user");
+    const raw=sessionStorage.getItem("smartfind_user");
     if(raw){try{currentRole=JSON.parse(raw).role||"STUDENT";}catch{currentRole="STUDENT";}}
     setSignedIn(token);
     setRole(currentRole);
@@ -54,7 +55,7 @@ export default function AppShell({children}:{children:React.ReactNode}) {
         {links.map(item=>{const Icon=item.icon;return <Link key={item.href} href={item.href} className={`nav-link ${path===item.href?"active":""}`}><Icon size={17}/>{t(item.key)}</Link>;})}
         {signedIn&&<Link href="/profile" className={`nav-link ${path==="/profile"?"active":""}`}><UserRound size={17}/>{t("profileTitle")}</Link>}
         {signedIn&&role==="ADMIN"&&<><div className="side-label spaced">ADMINISTRATION</div><Link href="/admin" className={`nav-link ${path==="/admin"?"active":""}`}><ShieldCheck size={17}/>{t("admin")}</Link><Link href="/admin/listings" className={`nav-link ${path==="/admin/listings"?"active":""}`}><ClipboardList size={17}/>{t("listingManagement")}</Link><Link href="/admin/claims" className={`nav-link ${path==="/admin/claims"?"active":""}`}><ShieldCheck size={17}/>{t("claimReview")}</Link><Link href="/admin/analytics" className={`nav-link ${path==="/admin/analytics"?"active":""}`}><BarChart3 size={17}/>{t("analytics")}</Link><Link href="/admin/zones" className={`nav-link ${path==="/admin/zones"?"active":""}`}><MapPin size={17}/>{lang==="en"?"Campus zones":"校园区域"}</Link></>}
-        <div className="side-bottom">{signedIn&&<Link href="/settings" className="nav-link"><Settings size={17}/>{t("settings")}</Link>}<div className="side-note">Independent academic project</div></div>
+        <div className="side-bottom">{<Link href="/settings" className="nav-link"><Settings size={17}/>{t("settings")}</Link>}<div className="side-note">Independent academic project</div></div>
       </aside>
       <main className="main-content">{children}</main>
     </div>

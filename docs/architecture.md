@@ -60,3 +60,9 @@ The system does not automatically recover an item when a score is high. Duplicat
 ## Model lifecycle and resources
 
 Model loading is lazy and cached at process level. Device selection supports CUDA, Apple Silicon MPS and CPU. Weight download failures do not prevent the non-AI listing and claim workflows from operating. Provider/method fields are stored with generated embeddings so the system does not silently compare incompatible vector methods.
+
+## November 14 audit changes
+
+Production browser requests now use relative `/api/v1` and `/media/public` paths through the existing Next.js rewrite. `BACKEND_ORIGIN` controls the upstream; its production default is the existing SmartFind Railway API. This retains HttpOnly SameSite=Lax visitor cookies on the browser's site. `NEXT_PUBLIC_API_*` remain development overrides, not production routing controls. Direct cross-site API cookies are not a reliable architecture for browsers blocking third-party cookies.
+
+Listing creation accepts an optional `client_request_id`; `(owner_id, client_request_id)` is unique. Retrying a request returns the existing listing for that owner. The additive migration leaves every existing report unchanged with a null retry key. Photo retries reuse a saved report ID. Search restricts candidates to OPEN/CLAIM_PENDING, excludes very low scores, and uses lexical overlap for old embedding methods rather than incompatible cosine vectors.

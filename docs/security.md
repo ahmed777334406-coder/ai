@@ -12,3 +12,11 @@
 - Similarity scores are not probabilities and cannot auto-approve claims.
 - Rate limiting is implemented in-process for authentication and general API requests. For multi-worker or public production deployments, replace it with a shared Redis-backed limiter and add operational monitoring.
 - This academic project has not undergone an independent penetration test or privacy impact assessment. Do not upload real identity cards, phone numbers, addresses or sensitive personal details to the demo.
+
+## Final audit hardening and limits
+
+Owner-scoped unique retry keys prevent duplicate report creation after a lost response. Input strings are trimmed before required-length validation. Claim creation and review lock the listing first; reviews of separate claims for one item use the same lock order. PostgreSQL concurrent execution still requires dedicated race tests. AI requests have a separate in-process 20/minute/IP quota; Gemini uses a 15-second per-request SDK timeout with two attempts. Match explanations can cause several sequential provider calls, so aggregate request latency remains a concern.
+
+Admin tokens moved from localStorage to sessionStorage; old persisted credentials are not reused. XSS can still read sessionStorage. Prefer a separately designed HttpOnly admin session with CSRF checks for a later release. Private evidence downloads enforce containment, are audited, and use no-store. Anonymous identity cannot safely be recovered after cookie loss without a deliberately designed recovery credential; never reconstruct identity using public information.
+
+Backup procedure: schedule encrypted PostgreSQL logical backups and snapshot/copy the complete persistent upload volume (public and private) under restricted access. Record backup timestamps together. Restore both into an isolated environment, run migrations, compare row counts and image hashes, test authorized evidence download, and only then approve a recovery procedure. No production restore was attempted during this audit.

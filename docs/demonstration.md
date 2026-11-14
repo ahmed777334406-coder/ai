@@ -18,3 +18,8 @@ In the **SmartFind** Railway backend variables, set `ADMIN_EMAIL` to your admini
 ## Live AI
 
 Set `GEMINI_API_KEY` privately in Railway and `GEMINI_MODEL` to a model available to that key (default `gemini-2.5-flash`). No key belongs in Vercel public variables. Failed or unconfigured requests return labeled deterministic fallbacks. For E5/OpenCLIP, build with `INSTALL_AI_DEPS=true`, set `ENABLE_LOCAL_MODELS=true`, and provision enough memory and a model cache. Installing the SDK does not establish a successful API call or model-quality metric.
+
+
+## Final branch demonstration
+
+Run `bash scripts/test-e2e-local.sh` for an isolated complete browser demonstration. On a separately started local instance, open `/smart-search`, search for `黑色耳机`, inspect the actual fallback label, then switch to database assistant. Submit a report with a photo and demonstrate the saved-report retry message using a blocked image request. Use two browser contexts for lost/found ownership isolation and a third for the local seeded administrator. Request additional evidence, upload it, download it only as administrator, and approve recovery. Never use production for synthetic demonstrations. Show `docs/verification/final-evaluation.json` and explain its hard negatives and limitations.

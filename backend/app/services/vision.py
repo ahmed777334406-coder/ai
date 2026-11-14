@@ -31,7 +31,10 @@ def embed_image(image_path: str) -> tuple[list[float], str]:
         with torch.no_grad():
             vector = model.encode_image(tensor)
             vector = vector / vector.norm(dim=-1, keepdim=True)
-        return vector[0].detach().cpu().tolist(), "openclip_vit_b32"
+        values = vector[0].detach().cpu().tolist()
+        if len(values) == 512:
+            method = "openclip_vit_b32" if settings.image_embedding_model == "ViT-B-32" else "clip:" + settings.image_embedding_model
+            return values, method
     # Explicitly labelled fallback: HSV colour histogram, not object-level CLIP inference.
     image = Image.open(image_path).convert("RGB").resize((128, 128))
     hsv = np.asarray(image.convert("HSV"), dtype=np.uint8)

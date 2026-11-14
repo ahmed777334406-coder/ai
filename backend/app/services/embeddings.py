@@ -58,7 +58,9 @@ def embed_text(text: str, role: str = "passage") -> tuple[list[float], str]:
     if model is not None:
         prefix = "query: " if role == "query" else "passage: "
         vector = model.encode(prefix + text, normalize_embeddings=True).tolist()
-        return vector, "multilingual_e5_small"
+        if len(vector) == 384:
+            method = "multilingual_e5_small" if settings.text_embedding_model == "intfloat/multilingual-e5-small" else "e5:" + settings.text_embedding_model
+            return vector, method
     return _fallback_vector(text), "bilingual_rule_hash_fallback"
 
 def cosine_similarity(a: list[float] | None, b: list[float] | None) -> float | None:

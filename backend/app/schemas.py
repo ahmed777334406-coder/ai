@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator, field_validator
 from typing import Literal
 from app.models import ListingStatus, ListingState, ClaimStatus, UserRole
 
@@ -27,6 +27,12 @@ class TokenOut(BaseModel):
     user: UserOut
 
 class ListingCreate(BaseModel):
+    client_request_id: str | None = Field(default=None, min_length=16, max_length=64, pattern=r"^[A-Za-z0-9_-]+$")
+    @field_validator("title", "description", "category", mode="before")
+    @classmethod
+    def trim_text(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
     status: ListingStatus
     title: str = Field(min_length=2, max_length=180)
     description: str = Field(min_length=5, max_length=5000)
@@ -37,6 +43,11 @@ class ListingCreate(BaseModel):
     private_identifiers: str | None = Field(default=None, max_length=3000)
 
 class ListingUpdate(BaseModel):
+    @field_validator("title", "description", "category", mode="before")
+    @classmethod
+    def trim_text(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
     title: str | None = Field(default=None, min_length=2, max_length=180)
     description: str | None = Field(default=None, min_length=5, max_length=5000)
     category: str | None = Field(default=None, min_length=2, max_length=80)

@@ -1,0 +1,26 @@
+{
+  "dataset": "4 bilingual queries; 8 found reports; four same-category attribute hard negatives plus cross-category negatives",
+  "positive_ranks": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "top1": 1.0,
+  "mrr": 1.0,
+  "nonpositive_pairs": 28,
+  "false_positive_rate_at_notification_threshold_35": 0.14285714285714285,
+  "pair_latency_ms_median": 1.182,
+  "pair_latency_ms_p95": 2.186,
+  "methods": [
+    "bilingual_rule_hash_fallback",
+    "exponential_14_day_decay",
+    "normalized_exact_category"
+  ],
+  "limitations": [
+    "Synthetic tiny sample; no general accuracy claim.",
+    "Local rule/hash text fallback, not pretrained semantic inference.",
+    "No image signal in this experiment; historical image evaluation remains separate.",
+    "False positives show why administrator review and richer attributes remain necessary."
+  ]
+}

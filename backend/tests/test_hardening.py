@@ -3,11 +3,11 @@ from unittest.mock import patch
 from sqlalchemy.exc import OperationalError
 from app.models import EmbeddingVector
 from app.config import Settings
-from test_api import register
+from test_api import start_visitor
 
 
 def test_logout_revokes_token_and_requires_authentication(client):
-    token = register(client)
+    token = start_visitor(client)
     headers = {"Authorization": f"Bearer {token}"}
     assert client.post('/api/v1/auth/logout').status_code == 401
     assert client.post('/api/v1/auth/logout', headers=headers).status_code == 200
@@ -18,7 +18,7 @@ def test_logout_revokes_token_and_requires_authentication(client):
 
 
 def test_profile_updates_persist_and_cannot_change_role(client):
-    token = register(client)
+    token = start_visitor(client)
     headers = {"Authorization": f"Bearer {token}"}
     updated = client.patch('/api/v1/auth/me', headers=headers, json={"full_name":"Fictional Student", "preferred_language":"zh", "role":"ADMIN"})
     assert updated.status_code == 200
@@ -50,7 +50,7 @@ def test_pgvector_results_convert_to_plain_lists():
 
 
 def test_public_listings_do_not_disclose_student_names(client):
-    token = register(client)
+    token = start_visitor(client)
     created = client.post('/api/v1/listings', headers={"Authorization":f"Bearer {token}"}, json={"status":"LOST", "title":"Black backpack", "description":"Black backpack lost near the library", "category":"Bags"})
     assert created.status_code == 201
     assert 'Test Student' not in client.get('/api/v1/listings').text
@@ -60,8 +60,8 @@ def test_rejected_claim_reopens_item_and_notifies_student(client):
     from app.models import User, UserRole
     from app.database import get_db
     from app.security import hash_password, create_access_token
-    owner = register(client, 'claim-owner@example.edu')
-    finder = register(client, 'claim-finder@example.edu')
+    owner = start_visitor(client, 'claim-owner@example.edu')
+    finder = start_visitor(client, 'claim-finder@example.edu')
     found = client.post('/api/v1/listings', headers={'Authorization':f'Bearer {finder}'}, json={'status':'FOUND','title':'Fictional wallet','description':'Blue wallet found in the cafeteria','category':'Wallets'}).json()
     claim = client.post('/api/v1/claims', headers={'Authorization':f'Bearer {owner}'}, json={'listing_id':found['id'],'verification_details':'Fictional identifying details for verification.'}).json()
     with next(client.app.dependency_overrides[get_db]()) as db:
@@ -77,7 +77,7 @@ def test_rejected_claim_reopens_item_and_notifies_student(client):
 
 
 def test_listing_patch_rejects_invalid_required_fields(client):
-    token=register(client)
+    token=start_visitor(client)
     headers={'Authorization':f'Bearer {token}'}
     item=client.post('/api/v1/listings',headers=headers,json={'status':'LOST','title':'Fictional key ring','description':'A silver key ring lost near the library','category':'Keys'}).json()
     for change in ({'title':None},{'description':''},{'category':'  '},{'title':'x'*181}):

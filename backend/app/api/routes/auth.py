@@ -16,6 +16,7 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/session", response_model=UserOut)
 def visitor_session(request: Request, response: Response, db: Session = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-store"
     token = request.cookies.get("smartfind_visitor")
     if token:
         try:
