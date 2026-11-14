@@ -2,7 +2,7 @@
 
 This addendum supersedes earlier implementation-status and deployment claims in the historical report below. The system remains an independent academic project without official university endorsement.
 
-The final audit added a bilingual Smart Search and database-assistant screen backed by the existing APIs, report edit/close controls, admin-only evidence download with audit logging, same-origin browser API routing, per-owner idempotency keys, saved-report photo retries, and retrieval/matching safeguards. Visitor privacy and administrator-controlled ownership decisions are retained. Full translation of legacy screens, real Gemini image inference, pretrained E5/OpenCLIP deployment, PostgreSQL concurrency verification and production release remain open.
+The final audit added a bilingual Smart Search and database-assistant screen backed by the existing APIs, report edit/close controls, admin-only evidence download with audit logging, same-origin browser API routing, per-owner idempotency keys, saved-report photo retries, and retrieval/matching safeguards. Visitor privacy and administrator-controlled ownership decisions are retained. Full translation of legacy screens, real Gemini image inference, pretrained E5/OpenCLIP deployment, dedicated PostgreSQL concurrency verification and production release remain open.
 
 Executed local evidence: 41 pytest tests pass; lint, TypeScript and Next.js production build pass; six Playwright workflows pass against isolated SQLite and temporary uploads. The browser tests exercise anonymous use, language switching, upload retry, real database search and fallback assistant, lost/found reports, private claims, additional evidence requests, admin evidence download and recovery notifications. These are not tests of every browser, every failure mode or production PostgreSQL. See `docs/verification/final-results.md` for commands and limitations.
 
@@ -10,7 +10,7 @@ Two live production Gemini calls returned google_gemini for Chinese text attribu
 
 A separate deterministic experiment uses four bilingual queries and eight candidate reports including same-category attribute hard negatives. All four positives rank first (MRR 1.0); 4 of 28 nonpositive pairs exceed the 35-point notification threshold (14.29%). This small synthetic dataset does not establish real-world accuracy. Measured pair-comparison median latency is 1.182 ms and p95 2.186 ms locally, excluding provider/network time and image inference. Scores express retrieval similarity, never ownership probabilities. Human review remains essential.
 
-The inspected existing API deployment identifies commit 685112e4b4527691abf507a673450213de1119a3; the audit branch is not deployed. Upload persistence, coordinated backups and restore must be verified before release. Existing DOCX/PDF outputs should be considered historical unless regenerated from this Markdown and checked.
+The inspected existing API deployment identifies commit 685112e4b4527691abf507a673450213de1119a3; the audit branch is not deployed. GitHub Actions run 43540537239 passed all three jobs, including migrations and 41 tests on PostgreSQL 17/pgvector and six isolated browser tests. Upload persistence, coordinated backups and restore must be verified before release. Existing DOCX/PDF outputs should be considered historical unless regenerated from this Markdown and checked.
 
 ---
 
@@ -30,7 +30,7 @@ The inspected existing API deployment identifies commit 685112e4b4527691abf507a6
 **Grade:** ____________________  
 **Report Date:** November 2026  
 
-Final audit: 41 isolated backend/migration tests and six local Playwright workflows pass. Lint, TypeScript and production build pass. Live Gemini text analysis and Chinese-to-English improvement returned google_gemini. Real image inference and pretrained E5/OpenCLIP remain unverified. PostgreSQL CI, production deployment of this branch, legacy-cookie transition and backup restore remain release gates. See docs/verification/final-results.md.
+Final audit: 41 isolated backend/migration tests and six local Playwright workflows pass. Lint, TypeScript and production build pass. Live Gemini text analysis and Chinese-to-English improvement returned google_gemini. Real image inference and pretrained E5/OpenCLIP remain unverified. Dedicated PostgreSQL concurrency/load testing, production deployment of this branch, legacy-cookie transition and backup restore remain release gates. See docs/verification/final-results.md.
 
 ---
 
@@ -156,7 +156,7 @@ All three known cross-language examples ranked their corresponding Chinese FOUND
 
 The frontend was built with patched Next.js 16.4.6, React and TypeScript, then deployed to the existing beihang-smartfind Vercel project. ESLint, TypeScript checking and production compilation all completed successfully. The backend runs independently on Railway in a dedicated SmartFind project. Its PostgreSQL 17 service contains pgvector and persistent storage; the application uses an independent volume for uploaded images and private evidence. The readiness endpoint returns HTTP 200 with database `postgresql`; database failures return HTTP 503.
 
-The current local browser suite passes six workflows against temporary data and uploads, covering anonymous use, language persistence, mobile width, reporting and real image uploads, failed photo retry, database search, assistant fallback, claims, additional evidence, administrator download and recovery notifications. New screenshots use the final- prefix in docs/screenshots. Remote PostgreSQL CI for this branch must be verified independently.
+The current local browser suite passes six workflows against temporary data and uploads, covering anonymous use, language persistence, mobile width, reporting and real image uploads, failed photo retry, database search, assistant fallback, claims, additional evidence, administrator download and recovery notifications. New screenshots use the final- prefix in docs/screenshots. Remote PostgreSQL CI passed 41 tests and migrations in run 43540537239; this does not establish race/load correctness.
 
 Live Gemini text inference was verified; image inference remains open. E5 and OpenCLIP are optional and disabled in the inspected deployment. Tested methods use bilingual rule/hash vectors and HSV histograms. These are explicit fallbacks, not pretrained model results.
 
@@ -216,7 +216,7 @@ The route modules separate authentication, listings, AI, matches, claims, notifi
 
 ## 9.6 Final implementation status
 
-Final audit: 41 isolated backend/migration tests and six local Playwright workflows pass. Lint, TypeScript and production build pass. Live Gemini text analysis and Chinese-to-English improvement returned google_gemini. Real image inference and pretrained E5/OpenCLIP remain unverified. PostgreSQL CI, production deployment of this branch, legacy-cookie transition and backup restore remain release gates. See docs/verification/final-results.md.
+Final audit: 41 isolated backend/migration tests and six local Playwright workflows pass. Lint, TypeScript and production build pass. Live Gemini text analysis and Chinese-to-English improvement returned google_gemini. Real image inference and pretrained E5/OpenCLIP remain unverified. Dedicated PostgreSQL concurrency/load testing, production deployment of this branch, legacy-cookie transition and backup restore remain release gates. See docs/verification/final-results.md.
 
 ### Operational boundaries
 

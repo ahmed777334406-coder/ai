@@ -31,3 +31,5 @@ No production deployment or migration was performed in this audit because releas
 ## Local reproduction
 
 Create `.venv`, install `backend/requirements.txt`, then `cd frontend && npm ci`. From repository root, `bash scripts/test-e2e-local.sh` creates disposable data/uploads, runs migrations and seed, builds the frontend, starts both servers, runs Playwright, and cleans up. It never targets production. For isolated PostgreSQL tests, use a disposable database and `TEST_DATABASE_URL`; the pytest fixture creates/drops its tables. Never point TEST_DATABASE_URL at production.
+
+Remote verification update: run 43540537239 passed frontend checks, PostgreSQL 17/pgvector migrations plus 41 tests, and six isolated E2E workflows on code commit 7ea7a41. Remaining release gates concern production storage, cookie transition, staging AI/image validation and coordinated rollout.

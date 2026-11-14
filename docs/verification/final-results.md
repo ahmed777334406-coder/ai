@@ -14,7 +14,7 @@ Scope: repository `ahmed777334406-coder/ai`, baseline `9281839`, branch `feat/sm
 | `bash scripts/test-e2e-local.sh` | 6 passed, 0 failed, 0 skipped; invokes `npm run build` and `npm run test:e2e` against fresh local SQLite, temporary uploads, demo admin, real browser and real API |
 | `.venv/bin/python scripts/evaluate_final.py` | Passed; 4 synthetic bilingual queries, 8 candidate reports, 32 scored pairs |
 | `DATABASE_URL=sqlite:////tmp/smartfind-e2e.db MPLCONFIGDIR=/tmp/smartfind-mpl .venv/bin/python scripts/evaluate.py` | Completed historical seed evaluation; existing published artifacts retained separately |
-| PostgreSQL/pgvector local integration | Blocked: no local PostgreSQL executable; Docker socket unavailable to this user. Existing CI job provisions isolated pgvector/Postgres 17; remote results must be checked separately |
+| PostgreSQL/pgvector local integration | Blocked: no local PostgreSQL executable; Docker socket unavailable to this user. Remote CI run 43540537239 subsequently passed migrations through 0003 and all 41 tests on isolated pgvector/Postgres 17 (2 warnings) |
 | `git diff --check` | Passed |
 
 Earlier browser runs exposed a real incorrect-login error message and test defects (outdated zone label, loose admin URL assertion, wrong search button label). Those were corrected; final isolated run passed. Earlier pytest collection failed once during legacy-helper migration; final run passes. A fresh migration run caught the historical metadata-based initial migration and the new migration was made compatible. These intermediate failures are not concealed as first-attempt success.
@@ -31,7 +31,7 @@ Hybrid synthetic evaluation: MRR=1.0 and top-1=4/4 on this deliberately tiny dat
 
 ## Remaining release gates
 
-- Remote PostgreSQL/pgvector CI, including the additive nullable retry-key migration.
+- PostgreSQL/pgvector CI is now passed; production rollout and dedicated concurrency/load tests remain open.
 - Real Gemini image inference in a staging environment with an operator-provisioned secret.
 - Resource profiling before enabling E5/OpenCLIP; safely re-embed records under exact model method identifiers. No production vectors rewritten.
 - Verify production browser proxy, legacy cookie transition, upload volume persistence and restore from backup.
@@ -41,3 +41,7 @@ Hybrid synthetic evaluation: MRR=1.0 and top-1=4/4 on this deliberately tiny dat
 Administrator tokens now use sessionStorage to reduce persistence; they remain readable by JavaScript and this is not an HttpOnly admin-session solution. Cross-domain visitor cookies cannot be silently transferred: users with only an old API-domain cookie need a separately reviewed recovery/transition process; no identity is inferred from report IDs, names or email.
 
 Academic outputs: `scripts/build_report.py` regenerated DOCX/PDF from updated Markdown. pypdf parsed all 15 pages (38,186 extracted text characters); python-docx reopened 147 paragraphs. Both contain the final addendum and 41-test result. Original outputs were backed up outside the repository during generation; no claim of exhaustive visual pagination review.
+
+## Remote CI completion
+
+[Run 43540537239](https://github.com/ahmed777334406-coder/ai/actions/runs/43540537239) completed successfully for code commit `7ea7a41d3553e4c949eff0d1fa7bc629894e55b2`: frontend checks passed; PostgreSQL 17/pgvector migrations reached `0003_report_idempotency`, 41 tests passed (2 upstream warnings); isolated E2E passed 6 tests and synthetic evaluation completed. A final documentation-only commit records this evidence. Production frontend and readiness endpoints separately returned HTTP 200. Existing image persistence was not verified.

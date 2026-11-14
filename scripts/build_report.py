@@ -26,7 +26,7 @@ text = MD_PATH.read_text(encoding="utf-8")
 lines = text.splitlines()
 start = next(i for i, line in enumerate(lines) if line.startswith("# 1. Creative Background"))
 body_lines = lines
-status_note = 'Final audit: 41 isolated backend/migration tests and six local Playwright workflows pass. Lint, TypeScript and production build pass. Live Gemini text analysis and Chinese-to-English improvement returned google_gemini. Real image inference and pretrained E5/OpenCLIP remain unverified. PostgreSQL CI, production deployment of this branch, legacy-cookie transition and backup restore remain release gates. See docs/verification/final-results.md.'
+status_note = 'Final audit: 41 isolated backend/migration tests and six local Playwright workflows pass. Lint, TypeScript and production build pass. Live Gemini text analysis and Chinese-to-English improvement returned google_gemini. Real image inference and pretrained E5/OpenCLIP remain unverified. Dedicated PostgreSQL concurrency/load testing, production deployment of this branch, legacy-cookie transition and backup restore remain release gates. See docs/verification/final-results.md.'
 
 # ---------- Markdown block parser ----------
 def parse_blocks(src_lines):

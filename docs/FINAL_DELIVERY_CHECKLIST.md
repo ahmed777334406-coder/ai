@@ -10,7 +10,7 @@
 - [x] Personal report edit/close controls.
 - [x] Local pytest, lint, typecheck, production build, browser workflows and synthetic evaluation.
 - [x] Safe local E2E runner; block remote test targets; add isolated CI browser job.
-- [ ] PostgreSQL/pgvector CI verified on remote commit.
+- [x] PostgreSQL/pgvector CI verified on code commit 7ea7a41 (run 43540537239): migrations and 41 tests passed.
 - [ ] Gemini image inference verified in staging.
 - [ ] E5/OpenCLIP pretrained inference and resource budgets verified.
 - [ ] Full EN/zh translation of legacy admin screens and server notifications.
