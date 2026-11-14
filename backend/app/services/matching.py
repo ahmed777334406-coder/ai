@@ -124,9 +124,11 @@ def run_matching(db: Session, listing: Listing, limit: int = 5) -> list[Match]:
     for candidate in candidates:
         if listing.status == ListingStatus.LOST: lost, found = listing, candidate
         else: lost, found = candidate, listing
-        if lost.id == found.id: continue
+        if lost.id == found.id or lost.owner_id == found.owner_id: continue
         evidence = score_pair(db, lost, found)
-        if evidence["available_weight"] <= 0: continue
+        if evidence["available_weight"] <= 0 or evidence["score"] < 35: continue
+        if evidence["components"].get("text") is not None and evidence["components"]["text"] < 0.10:
+            continue
         existing = db.query(Match).filter(Match.lost_listing_id == lost.id, Match.found_listing_id == found.id).first()
         deterministic_explanation = gemini_service._deterministic_explanation(evidence)
         methods = {**evidence["methods"], "missing_signals": evidence["missing_signals"],

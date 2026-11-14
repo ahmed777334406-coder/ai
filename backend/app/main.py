@@ -45,6 +45,10 @@ async def basic_rate_limit(request, call_next):
             return JSONResponse(status_code=403, content={"detail": "Untrusted request origin"})
     if path.startswith("/api/v1/auth/login"):
         limit, window = 12, 60
+    elif path.startswith("/api/v1/ai") and request.method == "POST":
+        limit, window = 20, 60
+    elif path.startswith("/api/v1/auth/session"):
+        limit, window = 30, 60
     elif path.startswith("/api/v1/auth/register"):
         limit, window = 8, 3600
     elif path.startswith("/api/v1/listings/") and request.method == "POST":
@@ -54,6 +58,8 @@ async def basic_rate_limit(request, call_next):
     host = request.client.host if request.client else "unknown"
     # Normalize numeric IDs and group non-auth routes to bound attacker-controlled keys.
     group = "login" if path.startswith("/api/v1/auth/login") else "register" if path.startswith("/api/v1/auth/register") else "uploads" if path.startswith("/api/v1/listings/") and request.method == "POST" else "general"
+    if path.startswith("/api/v1/ai") and request.method == "POST": group = "ai"
+    elif path.startswith("/api/v1/auth/session"): group = "session"
     key = f"{host}:{group}"
     now = monotonic()
     if len(_rate_buckets) > 10000:

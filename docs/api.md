@@ -45,3 +45,11 @@ Administrators can list, create and update campus zones under `/api/v1/admin/zon
 `PATCH /api/v1/auth/me` updates the authenticated user's full name and preferred language (`en`/`zh`). Roles are never writable through this route. Explicit null/blank required fields return 422. `POST /api/v1/auth/logout` requires authentication and persists a hash of the revoked token; subsequent use returns 401. New logins create distinct JWT identifiers.
 
 `GET /health/ready` returns 200 with `database: postgresql` when the configured database answers, or 503 with a sanitized error class. Production refuses SQLite and weak default secrets.
+
+## Final audit additions
+
+`POST /listings`: optional `client_request_id` (16–64 ASCII letters, digits, underscores/hyphens) makes retries idempotent per visitor; repeat calls return the original listing (201). Omit for legacy clients. Existing records have null keys.
+
+`POST /ai/search`: excludes recovered/closed/moderated listings and scores below 0.10. Returns per-result method; old embeddings use explicit lexical fallback. `/ai/assistant` summarizes these stored records only. `/ai/status` is configuration information, not an inference health check.
+
+`GET /admin/claims/{id}/evidence`: bearer administrator access, attachment response, no-store/nosniff, download audit record; never a public file URL.

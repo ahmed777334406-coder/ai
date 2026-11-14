@@ -25,8 +25,8 @@ PDF_OUT = ROOT / "report" / "SmartFind_Report.pdf"
 text = MD_PATH.read_text(encoding="utf-8")
 lines = text.splitlines()
 start = next(i for i, line in enumerate(lines) if line.startswith("# 1. Creative Background"))
-body_lines = lines[start:]
-status_note = 'The full application is committed to GitHub and deployed to the existing SmartFind Vercel project and an independent Railway backend. Backend tests pass locally; PostgreSQL/pgvector migrations and all 27 expanded tests passed in GitHub CI. The expanded suite has 27 passing local tests. Four deployed Playwright tests passed, including student registration, profile changes, English/Chinese switching, desktop/mobile layout, error handling, image uploads, candidate matching, claims, administrator approval, both recovery states and notifications. Gemini SDK integration is installed, but live Gemini calls remain unverified without GEMINI_API_KEY. E5/OpenCLIP integrations are optional and disabled in this deployment; tested results use explicitly labeled deterministic fallbacks. No real-world AI quality metrics are claimed.'
+body_lines = lines
+status_note = 'Final audit: 41 isolated backend/migration tests and six local Playwright workflows pass. Lint, TypeScript and production build pass. Live Gemini text analysis and Chinese-to-English improvement returned google_gemini. Real image inference and pretrained E5/OpenCLIP remain unverified. Dedicated PostgreSQL concurrency/load testing, production deployment of this branch, legacy-cookie transition and backup restore remain release gates. See docs/verification/final-results.md.'
 
 # ---------- Markdown block parser ----------
 def parse_blocks(src_lines):

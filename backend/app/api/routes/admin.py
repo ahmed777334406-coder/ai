@@ -45,12 +45,15 @@ def admin_claims(db: Session = Depends(get_db), admin: User = Depends(require_ad
 
 @router.patch("/claims/{claim_id}")
 def review_claim(claim_id: int, payload: ClaimReview, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
-    claim = db.query(Claim).filter(Claim.id == claim_id).with_for_update().first()
+    # Lock the listing before any claim: all reviews for one item share this order.
+    listing_id = db.query(Claim.listing_id).filter(Claim.id == claim_id).scalar()
+    if listing_id is None: raise HTTPException(404, "Claim not found")
+    listing = db.query(Listing).filter(Listing.id == listing_id).with_for_update().first()
+    claim = db.query(Claim).filter(Claim.id == claim_id).with_for_update().populate_existing().first()
     if not claim: raise HTTPException(404, "Claim not found")
     if claim.status in {ClaimStatus.APPROVED, ClaimStatus.REJECTED}: raise HTTPException(409, "This claim has already been finalized")
     if payload.status not in {ClaimStatus.NEEDS_EVIDENCE, ClaimStatus.APPROVED, ClaimStatus.REJECTED}:
         raise HTTPException(400, "Unsupported review status")
-    listing = db.query(Listing).filter(Listing.id == claim.listing_id).with_for_update().first()
     if payload.status == ClaimStatus.APPROVED and listing.state in {ListingState.RECOVERED, ListingState.CLOSED}:
         raise HTTPException(409, "This item is no longer available for approval")
     claim.status = payload.status; claim.admin_note = payload.admin_note; claim.reviewed_by = admin.id; claim.reviewed_at = datetime.now(timezone.utc)
@@ -120,7 +123,9 @@ def download_claim_evidence(claim_id: int, db: Session = Depends(get_db), admin:
     private_root = (Path(settings.upload_dir) / "private").resolve()
     if private_root not in path.parents or not path.is_file():
         raise HTTPException(404, "Claim evidence not found")
-    return FileResponse(path, media_type="application/octet-stream", filename=f"claim-{claim.id}-evidence{path.suffix}")
+    db.add(AuditLog(actor_id=admin.id, action="claim_evidence_downloaded", target_type="claim", target_id=str(claim.id), details={}))
+    db.commit()
+    return FileResponse(path, media_type="application/octet-stream", filename=f"claim-{claim.id}-evidence{path.suffix}", headers={"Cache-Control":"no-store", "X-Content-Type-Options":"nosniff"})
 
 
 @router.get("/zones")

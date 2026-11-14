@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pathlib import Path
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app.dependencies import get_current_user
@@ -41,12 +42,22 @@ def list_listings(status: ListingStatus | None = None, category: str | None = No
 
 @router.post("", status_code=201)
 def create_listing(payload: ListingCreate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    if payload.client_request_id:
+        existing = db.query(Listing).filter(Listing.owner_id == user.id, Listing.client_request_id == payload.client_request_id).first()
+        if existing: return serialize_listing(existing)
     if payload.zone_id and not db.get(CampusZone, payload.zone_id):
         raise HTTPException(400, "Unknown campus zone")
-    item = Listing(owner_id=user.id, status=payload.status, title=payload.title.strip(), description=payload.description.strip(),
+    item = Listing(owner_id=user.id, client_request_id=payload.client_request_id, status=payload.status, title=payload.title.strip(), description=payload.description.strip(),
                    category=payload.category.strip(), color=payload.color, zone_id=payload.zone_id,
                    occurred_at=payload.occurred_at, private_identifiers=payload.private_identifiers)
-    db.add(item); db.flush()
+    db.add(item)
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        existing = db.query(Listing).filter(Listing.owner_id == user.id, Listing.client_request_id == payload.client_request_id).first() if payload.client_request_id else None
+        if existing: return serialize_listing(existing)
+        raise
     vector, method = embed_text(f"{item.title}. {item.description}. {item.category}. {item.color or ''}", "passage")
     db.add(TextEmbedding(listing_id=item.id, vector=vector, method=method, dimensions=len(vector)))
     db.commit()

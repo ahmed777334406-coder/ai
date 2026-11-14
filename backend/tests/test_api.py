@@ -2,7 +2,7 @@ from app.database import SessionLocal
 from app.models import User, UserRole, CampusZone, Listing, ListingStatus, ListingState, Claim, ClaimStatus
 from app.security import hash_password
 
-def register(client, email="student@example.edu"):
+def start_visitor(client, email="student@example.edu"):
     # Existing API regression cases use separately issued visitor credentials.
     client.cookies.clear()
     response = client.post("/api/v1/auth/session")
@@ -16,7 +16,7 @@ def test_health_endpoints(client):
     assert client.get("/health/ready").json()["status"] == "ready"
 
 def test_visitor_session_and_profile(client):
-    token = register(client)
+    token = start_visitor(client)
     profile = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert profile.status_code == 200
     assert profile.json()["full_name"] == "Anonymous visitor"
@@ -27,7 +27,7 @@ def test_registration_removed(client):
     assert client.post("/api/v1/auth/register", json={}).status_code == 404
 
 def test_listing_create_and_private_fields_not_public(client):
-    token = register(client)
+    token = start_visitor(client)
     headers = {"Authorization": f"Bearer {token}"}
     created = client.post("/api/v1/listings", headers=headers, json={
         "status": "LOST", "title": "Black earbuds", "description": "Black wireless earbuds case lost near the library.",
@@ -41,8 +41,8 @@ def test_listing_create_and_private_fields_not_public(client):
     assert "private_identifiers" not in public.json()
 
 def test_opposite_status_matching_and_claim_review(client):
-    student_token = register(client, "owner@example.edu")
-    finder_token = register(client, "finder@example.edu")
+    student_token = start_visitor(client, "owner@example.edu")
+    finder_token = start_visitor(client, "finder@example.edu")
     student_headers = {"Authorization": f"Bearer {student_token}"}
     finder_headers = {"Authorization": f"Bearer {finder_token}"}
     lost = client.post("/api/v1/listings", headers=student_headers, json={
@@ -81,14 +81,14 @@ def test_opposite_status_matching_and_claim_review(client):
     assert lost_recovered.json()["state"] == "RECOVERED"
 
 def test_student_cannot_access_admin(client):
-    token = register(client)
+    token = start_visitor(client)
     response = client.get("/api/v1/admin/dashboard", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 403
 
 def test_image_upload_is_reencoded_and_analysis_provider_is_honest(client):
     from PIL import Image
     import io
-    token = register(client, "imageuser@example.edu")
+    token = start_visitor(client, "imageuser@example.edu")
     headers = {"Authorization": f"Bearer {token}"}
     listing = client.post("/api/v1/listings", headers=headers, json={
         "status":"LOST", "title":"Silver key ring", "description":"A small silver key ring near the dormitory.",
@@ -105,7 +105,7 @@ def test_image_upload_is_reencoded_and_analysis_provider_is_honest(client):
     assert data["image_url"].startswith("/media/public/")
 
 def test_duplicate_detection_is_warning_only(client):
-    token = register(client, "duplicate@example.edu")
+    token = start_visitor(client, "duplicate@example.edu")
     headers = {"Authorization": f"Bearer {token}"}
     first = client.post("/api/v1/listings", headers=headers, json={
         "status":"LOST", "title":"Black headphones", "description":"Black wireless headphones lost near the library.",
@@ -121,8 +121,8 @@ def test_duplicate_detection_is_warning_only(client):
     assert response.json()["possible_duplicates"][0]["automatic_action"] == "none"
 
 def test_claim_private_details_are_not_returned_to_student(client):
-    student_token = register(client, "claimant@example.edu")
-    finder_token = register(client, "ownerfound@example.edu")
+    student_token = start_visitor(client, "claimant@example.edu")
+    finder_token = start_visitor(client, "ownerfound@example.edu")
     student_headers = {"Authorization": f"Bearer {student_token}"}
     finder_headers = {"Authorization": f"Bearer {finder_token}"}
     found = client.post("/api/v1/listings", headers=finder_headers, json={
@@ -138,7 +138,7 @@ def test_claim_private_details_are_not_returned_to_student(client):
     assert "verification_details" not in private_view.json()
 
 def test_english_query_retrieves_chinese_listing_in_fallback_mode(client):
-    token = register(client, "crosslang@example.edu")
+    token = start_visitor(client, "crosslang@example.edu")
     headers = {"Authorization": f"Bearer {token}"}
     created = client.post("/api/v1/listings", headers=headers, json={
         "status":"FOUND", "title":"黑色蓝牙耳机盒", "description":"我在主图书馆附近捡到一个黑色蓝牙耳机盒。",
@@ -151,20 +151,20 @@ def test_english_query_retrieves_chinese_listing_in_fallback_mode(client):
     assert response.json()["results"][0]["listing"]["id"] == created.json()["id"]
 
 def test_matches_endpoint_is_scoped_to_the_current_user(client):
-    student_token = register(client, "matchowner@example.edu")
-    finder_token = register(client, "matchfinder@example.edu")
+    student_token = start_visitor(client, "matchowner@example.edu")
+    finder_token = start_visitor(client, "matchfinder@example.edu")
     student_headers = {"Authorization": f"Bearer {student_token}"}
     finder_headers = {"Authorization": f"Bearer {finder_token}"}
     lost = client.post("/api/v1/listings", headers=student_headers, json={"status":"LOST","title":"Blue wallet","description":"Blue wallet lost near library.","category":"Wallets","color":"Blue"}).json()
     found = client.post("/api/v1/listings", headers=finder_headers, json={"status":"FOUND","title":"Blue wallet found","description":"Found a blue wallet near library.","category":"Wallets","color":"Blue"}).json()
     client.post(f"/api/v1/ai/match/{lost['id']}", headers=student_headers)
     own = client.get("/api/v1/matches", headers=student_headers)
-    other = client.get("/api/v1/matches", headers={"Authorization": f"Bearer {register(client, 'outsider@example.edu')}"})
+    other = client.get("/api/v1/matches", headers={"Authorization": f"Bearer {start_visitor(client, 'outsider@example.edu')}"})
     assert own.status_code == 200 and len(own.json()) >= 1
     assert other.status_code == 200 and other.json() == []
 
 def test_pre_submission_duplicate_check_returns_warning_without_creating_record(client):
-    token = register(client, "precheck@example.edu")
+    token = start_visitor(client, "precheck@example.edu")
     headers = {"Authorization": f"Bearer {token}"}
     existing = client.post("/api/v1/listings", headers=headers, json={
         "status":"LOST", "title":"Black earbuds", "description":"Black wireless earbuds case lost by the library.",
@@ -182,7 +182,7 @@ def test_pre_submission_duplicate_check_returns_warning_without_creating_record(
     assert client.get("/api/v1/listings").json()["total"] == before
 
 def test_ai_assistant_answers_only_from_retrieved_database_records(client):
-    token = register(client, "assistant@example.edu")
+    token = start_visitor(client, "assistant@example.edu")
     headers = {"Authorization": f"Bearer {token}"}
     empty = client.post("/api/v1/ai/assistant", headers=headers, json={"query":"blue umbrella lost yesterday"})
     assert empty.status_code == 200
@@ -198,7 +198,7 @@ def test_ai_assistant_answers_only_from_retrieved_database_records(client):
     assert "Blue umbrella" in found.json()["answer"]
 
 def test_student_cannot_bypass_admin_recovery_state(client):
-    token = register(client, "stateowner@example.edu")
+    token = start_visitor(client, "stateowner@example.edu")
     headers = {"Authorization": f"Bearer {token}"}
     listing = client.post("/api/v1/listings", headers=headers, json={
         "status":"LOST", "title":"Silver watch", "description":"Silver watch lost near engineering building.",
@@ -239,8 +239,8 @@ def test_missing_matching_signals_are_excluded_and_weights_renormalized(client):
     from app.database import get_db
     from app.models import Listing
     from app.services.matching import score_pair
-    token_a = register(client, "missing-lost@example.edu")
-    token_b = register(client, "missing-found@example.edu")
+    token_a = start_visitor(client, "missing-lost@example.edu")
+    token_b = start_visitor(client, "missing-found@example.edu")
     lost = client.post("/api/v1/listings", headers={"Authorization": f"Bearer {token_a}"}, json={
         "status":"LOST", "title":"Silver key ring", "description":"A silver key ring with three keys.",
         "category":"Keys", "color":"Silver"
@@ -265,7 +265,7 @@ def test_missing_matching_signals_are_excluded_and_weights_renormalized(client):
 def test_image_upload_rejects_mismatched_extension(client):
     from PIL import Image
     import io
-    token = register(client, "mismatch-image@example.edu")
+    token = start_visitor(client, "mismatch-image@example.edu")
     headers = {"Authorization": f"Bearer {token}"}
     listing = client.post("/api/v1/listings", headers=headers, json={
         "status":"LOST", "title":"Test item", "description":"A test item image for validation.",

@@ -22,7 +22,7 @@ def _claim_out(claim: Claim, include_private: bool = False) -> dict:
 
 @router.post("", status_code=201)
 def create_claim(payload: ClaimCreate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    listing = db.get(Listing, payload.listing_id)
+    listing = db.query(Listing).filter(Listing.id == payload.listing_id).with_for_update().first()
     if not listing: raise HTTPException(404, "Listing not found")
     if listing.status != ListingStatus.FOUND: raise HTTPException(400, "Claims can only be submitted for found-item reports")
     if listing.owner_id == user.id: raise HTTPException(400, "You cannot claim your own found report")

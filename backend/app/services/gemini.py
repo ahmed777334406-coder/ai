@@ -39,7 +39,8 @@ class GeminiService:
     def _get_client(self):
         if not self.available: return None
         if self._client is None:
-            self._client = self._genai.Client(api_key=settings.gemini_api_key)
+            self._client = self._genai.Client(api_key=settings.gemini_api_key, http_options=self._types.HttpOptions(
+                timeout=15000, retry_options=self._types.HttpRetryOptions(attempts=2, initial_delay=0.5, max_delay=1.0)))
         return self._client
 
     def status(self) -> dict[str, Any]:
@@ -48,6 +49,8 @@ class GeminiService:
             "configured": bool(settings.gemini_api_key),
             "sdk_available": self._sdk_available,
             "available": self.available,
+            "inference_verified": False,
+            "availability_meaning": "Configuration and SDK only; each response identifies its actual provider",
             "model": settings.gemini_model,
             "mode": "live_api" if self.available else "unavailable_or_unconfigured",
         }

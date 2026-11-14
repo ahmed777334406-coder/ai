@@ -1,3 +1,19 @@
+# Final implementation verification addendum — 14 November 2026
+
+This addendum supersedes earlier implementation-status and deployment claims in the historical report below. The system remains an independent academic project without official university endorsement.
+
+The final audit added a bilingual Smart Search and database-assistant screen backed by the existing APIs, report edit/close controls, admin-only evidence download with audit logging, same-origin browser API routing, per-owner idempotency keys, saved-report photo retries, and retrieval/matching safeguards. Visitor privacy and administrator-controlled ownership decisions are retained. Full translation of legacy screens, real Gemini image inference, pretrained E5/OpenCLIP deployment, dedicated PostgreSQL concurrency verification and production release remain open.
+
+Executed local evidence: 41 pytest tests pass; lint, TypeScript and Next.js production build pass; six Playwright workflows pass against isolated SQLite and temporary uploads. The browser tests exercise anonymous use, language switching, upload retry, real database search and fallback assistant, lost/found reports, private claims, additional evidence requests, admin evidence download and recovery notifications. These are not tests of every browser, every failure mode or production PostgreSQL. See `docs/verification/final-results.md` for commands and limitations.
+
+Two live production Gemini calls returned google_gemini for Chinese text attribute extraction and Chinese-to-English description improvement. No synthetic image/report was uploaded to production; image inference remains unverified. E5-small and OpenCLIP remain optional and disabled in production. Tested methods are the bilingual rule/hash fallback and HSV image histogram, not pretrained inference.
+
+A separate deterministic experiment uses four bilingual queries and eight candidate reports including same-category attribute hard negatives. All four positives rank first (MRR 1.0); 4 of 28 nonpositive pairs exceed the 35-point notification threshold (14.29%). This small synthetic dataset does not establish real-world accuracy. Measured pair-comparison median latency is 1.182 ms and p95 2.186 ms locally, excluding provider/network time and image inference. Scores express retrieval similarity, never ownership probabilities. Human review remains essential.
+
+The inspected existing API deployment identifies commit 685112e4b4527691abf507a673450213de1119a3; the audit branch is not deployed. GitHub Actions run 43540537239 passed all three jobs, including migrations and 41 tests on PostgreSQL 17/pgvector and six isolated browser tests. Upload persistence, coordinated backups and restore must be verified before release. Existing DOCX/PDF outputs should be considered historical unless regenerated from this Markdown and checked.
+
+---
+
 # BEIHANG UNIVERSITY
 ## 2026-2027 Academic Year, First Semester
 
@@ -14,7 +30,7 @@
 **Grade:** ____________________  
 **Report Date:** November 2026  
 
-> **Implementation status (12 November 2026):** The full application is committed to GitHub and deployed to the existing SmartFind Vercel project and an independent Railway backend. Backend tests pass locally; PostgreSQL/pgvector migrations and all 27 expanded tests passed in GitHub CI. The expanded suite has 27 passing local tests. Four deployed Playwright tests passed, including student registration, profile changes, English/Chinese switching, desktop/mobile layout, error handling, image uploads, candidate matching, claims, administrator approval, both recovery states and notifications. Gemini SDK integration is installed, but live Gemini calls remain unverified without GEMINI_API_KEY. E5/OpenCLIP integrations are optional and disabled in this deployment; tested results use explicitly labeled deterministic fallbacks. No real-world AI quality metrics are claimed.
+Final audit: 41 isolated backend/migration tests and six local Playwright workflows pass. Lint, TypeScript and production build pass. Live Gemini text analysis and Chinese-to-English improvement returned google_gemini. Real image inference and pretrained E5/OpenCLIP remain unverified. Dedicated PostgreSQL concurrency/load testing, production deployment of this branch, legacy-cookie transition and backup restore remain release gates. See docs/verification/final-results.md.
 
 ---
 
@@ -42,7 +58,7 @@ The project also has an educational objective. It connects artificial intelligen
 
 ## 2.1 Google Gemini as the primary generative model
 
-Google Gemini is selected as the primary generative model for SmartFind. The application uses the official Google Gen AI Python SDK from the backend. The API key is read from the `GEMINI_API_KEY` environment variable and is not placed in frontend code, browser storage or public API responses. The model identifier is controlled by `GEMINI_MODEL` rather than repeated as a hard-coded string in multiple modules. The initial configurable value in the example environment is `gemini-3.1-flash-lite`. Model availability can change and depends on the Google AI Studio/API account, so the selected identifier must be checked against the current model list before a live integration test. The execution environment used for this implementation had no outbound access to the official model documentation and no API key was supplied; therefore this report does not claim that a live Gemini call was completed.
+Google Gemini is the primary generative provider, using the official server-side Google Gen AI SDK. GEMINI_API_KEY remains backend-only and GEMINI_MODEL selects the model. The inspected production model is gemini-3-flash-preview. Two live text calls succeeded in this audit; image understanding uses the SDK image Part path but remains unverified with real inference.
 
 ## 2.2 Intended Gemini tasks
 
@@ -102,7 +118,7 @@ The seed script creates five configurable demonstration zones: Main Library, Eng
 
 ## 4.3 API and workflow testing
 
-The FastAPI application was imported and compiled. Pytest was run against an isolated in-memory SQLite database. The tests cover health endpoints, registration, login, profile retrieval, duplicate account rejection, listing creation, omission of private listing fields, opposite-status matching, claim submission, administrator claim approval, recovery of both linked reports, student denial of administrator access, image upload, fallback-provider honesty, duplicate detection, private claim detail protection, cross-language retrieval in the fallback mode, user-scoped match retrieval, missing-signal weight normalization, cosine-score clamping and rejection of an image whose filename extension does not match its decoded format. The latest test run completed with eighteen passing tests.
+The backend suite now passes 41 tests, including anonymous session isolation/revocation/CSRF, report ownership, validated uploads, private evidence access, claim review, retrieval fallback, same-owner match exclusion, idempotent retries, and fresh/existing-schema migration. SQLite results do not establish PostgreSQL concurrency correctness.
 
 A live Uvicorn process was also started against the seeded local SQLite database. The health and readiness endpoints returned HTTP 200, and readiness identified SQLite as the active database. A separate live synthetic end-to-end workflow registered two student accounts, created one LOST and one FOUND report, uploaded a PNG photograph, generated five potential candidates, submitted a claim linked to the candidate match, and approved the claim through an administrator account. The selected candidate score in that run was 63.34 (a ranking score, not a probability). The live upload reported `opencv_hsv_histogram_fallback` for the image and `rule_fallback` for Gemini, correctly identifying that pretrained OpenCLIP and live Gemini were not used. After approval, both linked reports were `RECOVERED` and the claimant received a `CLAIM_APPROVED` notification. This is a software smoke test against synthetic records, not a real campus experiment.
 
@@ -140,9 +156,9 @@ All three known cross-language examples ranked their corresponding Chinese FOUND
 
 The frontend was built with patched Next.js 16.4.6, React and TypeScript, then deployed to the existing beihang-smartfind Vercel project. ESLint, TypeScript checking and production compilation all completed successfully. The backend runs independently on Railway in a dedicated SmartFind project. Its PostgreSQL 17 service contains pgvector and persistent storage; the application uses an independent volume for uploaded images and private evidence. The readiness endpoint returns HTTP 200 with database `postgresql`; database failures return HTTP 503.
 
-GitHub CI completed migrations and all 27 expanded API/workflow tests against PostgreSQL/pgvector. The expanded local suite passes 27 tests, adding rejection, login throttling and listing-patch validation. Four Playwright tests executed against the public frontend and backend. They verified registration and profile persistence, protected-route redirects, login errors, English/Chinese switching, desktop and 390-pixel mobile layouts, two student reports with image uploads, ranked fallback matching, a claim, administrator approval, recovery of both linked reports, and notifications to both students. Genuine screenshots are stored in `docs/screenshots/`. No screenshot depicts a successful Gemini API call.
+The current local browser suite passes six workflows against temporary data and uploads, covering anonymous use, language persistence, mobile width, reporting and real image uploads, failed photo retry, database search, assistant fallback, claims, additional evidence, administrator download and recovery notifications. New screenshots use the final- prefix in docs/screenshots. Remote PostgreSQL CI passed 41 tests and migrations in run 43540537239; this does not establish race/load correctness.
 
-Live Gemini calls require a server-side API key and remain unverified. E5 and OpenCLIP model loading is available behind an explicit configuration flag, but the current deployment uses bilingual rule-hash text vectors and HSV image histograms. The UI exposes the fallback label. Model availability is not the same as empirical retrieval quality. The small synthetic evaluation remains a pipeline demonstration and must not be generalized to real campus performance.
+Live Gemini text inference was verified; image inference remains open. E5 and OpenCLIP are optional and disabled in the inspected deployment. Tested methods use bilingual rule/hash vectors and HSV histograms. These are explicit fallbacks, not pretrained model results.
 
 # 6. Experimental Summary
 
@@ -150,7 +166,7 @@ The implementation demonstrates a working backend foundation for an AI-assisted 
 
 The most important design characteristic is the handling of missing evidence. Reports are often incomplete, so a matching engine should not assume that an absent photograph or date is a negative signal. SmartFind excludes unavailable signals and normalizes the weights of the signals that remain. The second important characteristic is privacy. Private identifying details and claim evidence are not exposed in ordinary listing responses. The third characteristic is transparent fallback behaviour. When pretrained model dependencies are unavailable, the API reports the fallback method instead of presenting a simple histogram or keyword rule as a CLIP or E5 result.
 
-The main limitations are the small synthetic dataset, absence of live Gemini verification and absence of pretrained model inference in the current run. PostgreSQL/pgvector deployment, the production frontend build and the deployed recovery workflow are now verified. The next experiment should use a larger labelled dataset with hard negative pairs, multiple photographs per object, different lighting and viewing angles, and more varied Chinese and English descriptions. The model-based results should be compared against the fallback baseline and reported with latency and resource use. The interface should then be tested at desktop and mobile widths, and the full student-to-administrator recovery workflow should be recorded.
+The main limitations are small synthetic evaluation sets, unverified image-provider inference, disabled pretrained embeddings, incomplete legacy translations and pending production rollout/backup verification. Larger independently labelled datasets, PostgreSQL race/load testing and physical phone checks remain necessary.
 
 # 7. Course Learning Summary
 
@@ -200,7 +216,7 @@ The route modules separate authentication, listings, AI, matches, claims, notifi
 
 ## 9.6 Final implementation status
 
-The full application is committed to GitHub and deployed to the existing SmartFind Vercel project and an independent Railway backend. Backend tests pass locally; PostgreSQL/pgvector migrations and all 27 expanded tests passed in GitHub CI. The expanded suite has 27 passing local tests. Four deployed Playwright tests passed, including student registration, profile changes, English/Chinese switching, desktop/mobile layout, error handling, image uploads, candidate matching, claims, administrator approval, both recovery states and notifications. Gemini SDK integration is installed, but live Gemini calls remain unverified without GEMINI_API_KEY. E5/OpenCLIP integrations are optional and disabled in this deployment; tested results use explicitly labeled deterministic fallbacks. No real-world AI quality metrics are claimed.
+Final audit: 41 isolated backend/migration tests and six local Playwright workflows pass. Lint, TypeScript and production build pass. Live Gemini text analysis and Chinese-to-English improvement returned google_gemini. Real image inference and pretrained E5/OpenCLIP remain unverified. Dedicated PostgreSQL concurrency/load testing, production deployment of this branch, legacy-cookie transition and backup restore remain release gates. See docs/verification/final-results.md.
 
 ### Operational boundaries
 

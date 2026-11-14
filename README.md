@@ -1,3 +1,5 @@
+> Final audit (14 November 2026): see [gap analysis](docs/FINAL_GAP_ANALYSIS.md), [executed verification](docs/verification/final-results.md), and [delivery checklist](docs/FINAL_DELIVERY_CHECKLIST.md). This branch adds real API-backed Smart Search/assistant, reliable report retries, private evidence downloads and local E2E coverage. It is **not a claim that every submission requirement or production release is complete**. Current pretrained E5/OpenCLIP inference is unverified; production uses explicit fallbacks. Existing production and this branch must be distinguished.
+
 # Beihang SmartFind
 
 Bilingual campus lost-and-found application. Students can browse, report items,

@@ -14,8 +14,8 @@ router = APIRouter(prefix="/ai", tags=["artificial intelligence"])
 
 @router.get("/status")
 def ai_status():
-    return {"gemini": gemini_service.status(), "text_embedding": {"model": "intfloat/multilingual-e5-small", "enabled": settings.enable_local_models, "status": "lazy-loaded; rule fallback if unavailable" if settings.enable_local_models else "disabled; bilingual rule/hash fallback"},
-            "image_embedding": {"model": "OpenCLIP ViT-B/32", "enabled": settings.enable_local_models, "status": "lazy-loaded; HSV histogram fallback if unavailable" if settings.enable_local_models else "disabled; HSV histogram fallback"}}
+    return {"gemini": gemini_service.status(), "text_embedding": {"model": settings.text_embedding_model, "enabled": settings.enable_local_models, "status": "lazy-loaded; rule fallback if unavailable" if settings.enable_local_models else "disabled; bilingual rule/hash fallback"},
+            "image_embedding": {"model": settings.image_embedding_model, "enabled": settings.enable_local_models, "status": "lazy-loaded; HSV histogram fallback if unavailable" if settings.enable_local_models else "disabled; HSV histogram fallback"}}
 
 @router.post("/analyze")
 def analyze_text(payload: SearchRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
@@ -47,7 +47,7 @@ def match_listing(listing_id: int, db: Session = Depends(get_db), user: User = D
 @router.post("/search")
 def semantic_search(payload: SearchRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     query_vector, query_method = embed_text(payload.query, "query")
-    query = db.query(Listing).options(joinedload(Listing.owner), joinedload(Listing.zone), joinedload(Listing.images)).filter(Listing.state != ListingState.CLOSED)
+    query = db.query(Listing).options(joinedload(Listing.owner), joinedload(Listing.zone), joinedload(Listing.images)).filter(Listing.state.in_([ListingState.OPEN, ListingState.CLAIM_PENDING]))
     if payload.status: query = query.filter(Listing.status == payload.status)
     retrieval_backend = "python_cosine_fallback"
     if db.bind and db.bind.dialect.name == "postgresql":
@@ -57,7 +57,7 @@ def semantic_search(payload: SearchRequest, db: Session = Depends(get_db), user:
         status_clause = "AND l.status = :status" if payload.status else ""
         sql = sql_text(f"""SELECT te.listing_id, GREATEST(0, 1 - (te.vector <=> CAST(:query_vector AS vector))) AS similarity
             FROM text_embeddings te JOIN listings l ON l.id = te.listing_id
-            WHERE te.vector IS NOT NULL AND te.method = :method AND l.state <> 'CLOSED' {status_clause}
+            WHERE te.vector IS NOT NULL AND te.method = :method AND l.state IN ('OPEN', 'CLAIM_PENDING') {status_clause}
             ORDER BY te.vector <=> CAST(:query_vector AS vector) LIMIT :limit""")
         params = {"query_vector": vector_literal, "method": query_method, "limit": payload.limit}
         if payload.status: params["status"] = payload.status.value
@@ -68,6 +68,17 @@ def semantic_search(payload: SearchRequest, db: Session = Depends(get_db), user:
         candidates = [by_id[item_id] for item_id in ids if item_id in by_id]
         ranked = [(score_map[item.id], item, query_method) for item in candidates]
         retrieval_backend = "pgvector_cosine_hnsw"
+        # Preserve access to older representations without comparing incompatible vectors.
+        legacy = query.outerjoin(TextEmbedding, TextEmbedding.listing_id == Listing.id).filter(
+            (TextEmbedding.id.is_(None)) | (TextEmbedding.method != query_method)
+        ).order_by(Listing.created_at.desc()).limit(300).all()
+        from app.services.embeddings import _canonicalize
+        qset = set(_canonicalize(payload.query).split())
+        for item in legacy:
+            tset = set(_canonicalize(item.title + " " + item.description + " " + item.category).split())
+            score = len(qset & tset) / max(1, len(qset | tset))
+            ranked.append((score, item, "lexical_overlap_fallback"))
+
     else:
         candidates = query.order_by(Listing.created_at.desc()).limit(300).all()
         ranked = []
@@ -85,6 +96,7 @@ def semantic_search(payload: SearchRequest, db: Session = Depends(get_db), user:
                 score = len(qset & tset) / max(1, len(qset | tset))
                 method = "lexical_overlap_fallback"
             ranked.append((score or 0.0, item, method))
+    ranked = [row for row in ranked if row[0] >= 0.10]
     ranked.sort(key=lambda row: row[0], reverse=True)
     return {"query": payload.query, "method": query_method, "retrieval_backend": retrieval_backend, "results": [{"score": round(score * 100, 2), "method": method, "listing": serialize_listing(item)} for score, item, method in ranked[:payload.limit]]}
 
@@ -100,7 +112,7 @@ def assistant(payload: SearchRequest, db: Session = Depends(get_db), user: User 
 def check_duplicates_before_submission(payload: DuplicateCheckRequest, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     query_vector, query_method = embed_text(f"{payload.title}. {payload.description}. {payload.category}. {payload.color or ''}", "query")
     candidates = db.query(Listing).options(joinedload(Listing.images)).filter(
-        Listing.status == payload.status, Listing.state != ListingState.CLOSED
+        Listing.status == payload.status, Listing.state.in_([ListingState.OPEN, ListingState.CLAIM_PENDING])
     ).order_by(Listing.created_at.desc()).limit(300).all()
     warnings = []
     for candidate in candidates:
@@ -124,7 +136,7 @@ def detect_duplicates(listing_id: int, db: Session = Depends(get_db), user: User
     if not listing: raise HTTPException(404, "Listing not found")
     if listing.owner_id != user.id and user.role.value != "ADMIN": raise HTTPException(403, "You can only check duplicates for your own listing")
     candidates = db.query(Listing).options(joinedload(Listing.images)).filter(
-        Listing.id != listing.id, Listing.status == listing.status, Listing.state != ListingState.CLOSED
+        Listing.id != listing.id, Listing.status == listing.status, Listing.state.in_([ListingState.OPEN, ListingState.CLAIM_PENDING])
     ).all()
     source_text, source_method = _embedding(db, listing)
     source_image, source_image_method = _image_vector(db, listing)

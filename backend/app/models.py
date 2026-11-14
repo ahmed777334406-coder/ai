@@ -79,6 +79,7 @@ class Listing(Base):
     color: Mapped[str | None] = mapped_column(String(60), nullable=True, index=True)
     zone_id: Mapped[int | None] = mapped_column(ForeignKey("campus_zones.id"), nullable=True, index=True)
     occurred_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    client_request_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     private_identifiers: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_synthetic: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), index=True)
@@ -86,7 +87,7 @@ class Listing(Base):
     owner: Mapped[User] = relationship(back_populates="listings")
     zone: Mapped[CampusZone | None] = relationship()
     images: Mapped[list["ListingImage"]] = relationship(back_populates="listing", cascade="all, delete-orphan")
-    __table_args__ = (Index("ix_listing_status_state", "status", "state"),)
+    __table_args__ = (Index("ix_listing_status_state", "status", "state"), UniqueConstraint("owner_id", "client_request_id", name="uq_listing_owner_request"))
 
 class ListingImage(Base):
     __tablename__ = "listing_images"
